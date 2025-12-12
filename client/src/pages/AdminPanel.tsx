@@ -5,7 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Trash2, Eye, EyeOff, Upload, Home, Image as ImageIcon } from "lucide-react";
+import { Loader2, Trash2, Eye, EyeOff, Upload, Home, Image as ImageIcon, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminPanel() {
@@ -15,6 +15,8 @@ export default function AdminPanel() {
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedCardForPair, setSelectedCardForPair] = useState<number | null>(null);
+  const [pairingMode, setPairingMode] = useState(false);
 
   // Refs for file inputs
   const frontInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +56,18 @@ export default function AdminPanel() {
     },
     onError: (error) => {
       toast.error("Erro ao atualizar status: " + error.message);
+    },
+  });
+
+  const setPairMutation = trpc.cardImages.setPair.useMutation({
+    onSuccess: () => {
+      toast.success("Par configurado com sucesso!");
+      setSelectedCardForPair(null);
+      setPairingMode(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Erro ao configurar par: " + error.message);
     },
   });
 
@@ -277,6 +291,17 @@ export default function AdminPanel() {
                             <Button
                               size="sm"
                               variant="secondary"
+                              onClick={() => {
+                                setSelectedCardForPair(card.id);
+                                setPairingMode(true);
+                              }}
+                              title="Configurar par"
+                            >
+                              <Link2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
                               onClick={() =>
                                 toggleActiveMutation.mutate({
                                   id: card.id,
@@ -320,6 +345,49 @@ export default function AdminPanel() {
             </Card>
           </div>
         </div>
+
+        {/* Pairing Modal */}
+        {pairingMode && selectedCardForPair && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>Configurar Par</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecione qual carta é o par de <strong>{cardImages.find(c => c.id === selectedCardForPair)?.name}</strong>
+                </p>
+                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                  {cardImages.filter(c => c.id !== selectedCardForPair).map((card) => (
+                    <button
+                      key={card.id}
+                      onClick={() => {
+                        setPairMutation.mutate({
+                          id: selectedCardForPair,
+                          pairId: card.id,
+                        });
+                      }}
+                      className="p-2 border rounded hover:bg-blue-50 transition-colors text-sm"
+                    >
+                      <img src={card.frontImageUrl} alt={card.name} className="w-full h-16 object-cover rounded mb-1" />
+                      <p className="truncate text-xs font-medium">{card.name}</p>
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={() => {
+                    setSelectedCardForPair(null);
+                    setPairingMode(false);
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

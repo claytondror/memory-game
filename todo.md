@@ -73,3 +73,8 @@
 - [ ] Modificar painel admin para permitir definir qual é o par de cada carta - EM PROGRESSO
 - [x] Atualizar lógica de verificação de pares no jogo - COMPLETO
 - [ ] Testar com cartas emoção + versículo
+
+## BUG CRÍTICO - Sistema de Pares
+- [x] Painel admin não tem interface para configurar pares - CORRIGIDO com modal visual
+- [ ] Novas cartas carregadas não tém pairId configurado (fica null) - EM PROGRESSO
+- [ ] Jogo não encontra pares porque pairId está vazio nas novas cartas - DEPENDE DO ANTERIOR
