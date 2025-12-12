@@ -264,10 +264,10 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
                 transition={{ duration: 0.6 }}
                 style={{ transformStyle: "preserve-3d" }}
               >
-                {/* Back of card (shown initially) */}
+                {/* Back of card (shown initially when rotateY: 0) */}
                 <div
                   className="absolute w-full h-full bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden"
-                  style={{ backfaceVisibility: "hidden" }}
+                  style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
                 >
                   <img
                     src={card.backImageUrl}
@@ -276,10 +276,10 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
                   />
                 </div>
 
-                {/* Front of card (shown when flipped) */}
+                {/* Front of card (shown when rotateY: 180) */}
                 <div
                   className="absolute w-full h-full bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden"
-                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                  style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
                   <img
                     src={card.frontImageUrl}
