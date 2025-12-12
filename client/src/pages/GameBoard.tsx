@@ -260,30 +260,30 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
             >
               <motion.div
                 className="relative w-full h-full"
-                animate={{ rotateY: flippedCards.includes(index) || card.isMatched ? 0 : 180 }}
+                animate={{ rotateY: flippedCards.includes(index) || card.isMatched ? 180 : 0 }}
                 transition={{ duration: 0.6 }}
                 style={{ transformStyle: "preserve-3d" }}
               >
-                {/* Front of card (shown when not flipped) */}
+                {/* Back of card (shown initially) */}
                 <div
                   className="absolute w-full h-full bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden"
                   style={{ backfaceVisibility: "hidden" }}
                 >
                   <img
-                    src={card.frontImageUrl}
-                    alt="card-front"
+                    src={card.backImageUrl}
+                    alt="card-back"
                     className="w-full h-full object-cover"
                   />
                 </div>
 
-                {/* Back of card (shown when flipped) */}
+                {/* Front of card (shown when flipped) */}
                 <div
-                  className="absolute w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center cursor-pointer shadow-lg"
+                  className="absolute w-full h-full bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden"
                   style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
                   <img
-                    src={card.backImageUrl}
-                    alt="card-back"
+                    src={card.frontImageUrl}
+                    alt="card-front"
                     className="w-full h-full object-cover"
                   />
                 </div>

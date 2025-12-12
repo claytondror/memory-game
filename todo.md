@@ -62,3 +62,5 @@
 
 - [x] Corrigir lógica de flip das cartas - está invertida (mostrando verso em vez de frente) - CORRIGIDO
 - [x] Aumentar tamanho das cartas para 63.5mm x 88.9mm (padrão de cartas de jogo) - CORRIGIDO
+
+- [x] Corrigir ordem das imagens - verso deveria aparecer inicialmente, frente após clicar - CORRIGIDO
