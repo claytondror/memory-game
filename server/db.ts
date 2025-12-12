@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, cardImages, gameSessions, gameParticipants, gameMoves, InsertCardImage, InsertGameSession, InsertGameParticipant, InsertGameMove } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,108 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Card Images queries
+export async function getAllActiveCardImages() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(cardImages).where(eq(cardImages.isActive, true));
+}
+
+export async function getAllCardImages() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(cardImages);
+}
+
+export async function createCardImage(data: InsertCardImage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(cardImages).values(data);
+  return result;
+}
+
+export async function deleteCardImage(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.delete(cardImages).where(eq(cardImages.id, id));
+}
+
+export async function updateCardImageStatus(id: number, isActive: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.update(cardImages).set({ isActive }).where(eq(cardImages.id, id));
+}
+
+// Game Sessions queries
+export async function createGameSession(data: InsertGameSession) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(gameSessions).values(data);
+  return result;
+}
+
+export async function getGameSession(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(gameSessions).where(eq(gameSessions.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getGameSessionByRoomId(roomId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(gameSessions).where(eq(gameSessions.roomId, roomId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateGameSession(id: number, data: Partial<InsertGameSession>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.update(gameSessions).set(data).where(eq(gameSessions.id, id));
+}
+
+// Game Participants queries
+export async function addGameParticipant(data: InsertGameParticipant) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.insert(gameParticipants).values(data);
+}
+
+export async function getGameParticipants(gameSessionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(gameParticipants).where(eq(gameParticipants.gameSessionId, gameSessionId));
+}
+
+export async function updateParticipantScore(id: number, score: number, pairsFound: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.update(gameParticipants).set({ score, pairsFound }).where(eq(gameParticipants.id, id));
+}
+
+// Game Moves queries
+export async function recordGameMove(data: InsertGameMove) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.insert(gameMoves).values(data);
+}
+
+export async function getGameMoves(gameSessionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(gameMoves).where(eq(gameMoves.gameSessionId, gameSessionId));
+}
