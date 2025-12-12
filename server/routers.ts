@@ -95,6 +95,17 @@ export const appRouter = router({
         await db.updateCardImageStatus(input.id, input.isActive);
         return { success: true };
       }),
+
+    setPair: protectedProcedure
+      .input(z.object({ id: z.number(), pairId: z.number().nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        await db.updateCardImagePair(input.id, input.pairId);
+        return { success: true };
+      }),
   }),
 
   // Game management

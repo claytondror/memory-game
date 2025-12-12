@@ -1,0 +1,1 @@
+ALTER TABLE `card_images` ADD `pairId` int;

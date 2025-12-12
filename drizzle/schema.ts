@@ -26,18 +26,21 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 /**
- * Card images table - stores the front and back images for memory cards
+ * Card images table - stores individual cards with their images
+ * Cards are related to each other via pairId to create matching pairs
  * Only the owner/admin can manage these
  */
 export const cardImages = mysqlTable("card_images", {
   id: int("id").autoincrement().primaryKey(),
   /** URL to the front face image (stored in S3) */
   frontImageUrl: text("frontImageUrl").notNull(),
-  /** URL to the back face image (stored in S3) */
+  /** URL to the back face image (stored in S3) - same for all cards */
   backImageUrl: text("backImageUrl").notNull(),
-  /** Display name for the card pair */
+  /** Display name for this card */
   name: varchar("name", { length: 255 }).notNull(),
-  /** Whether this card pair is active/visible in games */
+  /** ID of the card that matches with this one (for pair matching) */
+  pairId: int("pairId"),
+  /** Whether this card is active/visible in games */
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

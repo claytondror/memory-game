@@ -9,6 +9,7 @@ import { RotateCcw, Home } from "lucide-react";
 interface Card {
   id: number;
   imageId: number;
+  pairId: number | null;
   frontImageUrl: string;
   backImageUrl: string;
   isFlipped: boolean;
@@ -51,6 +52,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
         demoCards.push({
           id: index * 2,
           imageId: index,
+          pairId: index * 2 + 1,
           frontImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='${encodeURIComponent(color)}' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='40' fill='white' text-anchor='middle' dy='.3em'%3E${index + 1}%3C/text%3E%3C/svg%3E`,
           backImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%234169E1' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='60' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E`,
           isFlipped: false,
@@ -59,6 +61,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
         demoCards.push({
           id: index * 2 + 1,
           imageId: index,
+          pairId: index * 2,
           frontImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='${encodeURIComponent(color)}' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='40' fill='white' text-anchor='middle' dy='.3em'%3E${index + 1}%3C/text%3E%3C/svg%3E`,
           backImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%234169E1' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='60' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E`,
           isFlipped: false,
@@ -95,6 +98,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
       newCards.push({
         id: index * 2,
         imageId: image.id,
+        pairId: image.pairId,
         frontImageUrl: image.frontImageUrl,
         backImageUrl: image.backImageUrl,
         isFlipped: false,
@@ -103,6 +107,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
       newCards.push({
         id: index * 2 + 1,
         imageId: image.id,
+        pairId: image.pairId,
         frontImageUrl: image.frontImageUrl,
         backImageUrl: image.backImageUrl,
         isFlipped: false,
@@ -140,7 +145,9 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
     // Check for match when 2 cards are flipped
     if (newFlipped.length === 2) {
       const [first, second] = newFlipped;
-      const isMatch = cards[first].imageId === cards[second].imageId;
+      const firstCard = cards[first];
+      const secondCard = cards[second];
+      const isMatch = (firstCard.pairId === secondCard.id) || (firstCard.id === secondCard.pairId);
 
       setTimeout(() => {
         if (isMatch) {

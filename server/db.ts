@@ -126,6 +126,21 @@ export async function updateCardImageStatus(id: number, isActive: boolean) {
   return db.update(cardImages).set({ isActive }).where(eq(cardImages.id, id));
 }
 
+export async function updateCardImagePair(id: number, pairId: number | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.update(cardImages).set({ pairId }).where(eq(cardImages.id, id));
+}
+
+export async function getCardImageWithPair(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(cardImages).where(eq(cardImages.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
 // Game Sessions queries
 export async function createGameSession(data: InsertGameSession) {
   const db = await getDb();

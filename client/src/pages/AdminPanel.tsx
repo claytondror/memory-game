@@ -306,6 +306,11 @@ export default function AdminPanel() {
                           <p className="text-xs text-gray-500">
                             {card.isActive ? "Ativa" : "Inativa"}
                           </p>
+                          {card.pairId && (
+                            <p className="text-xs text-blue-600 mt-1">
+                              Par: ID {card.pairId}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

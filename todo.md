@@ -64,3 +64,12 @@
 - [x] Aumentar tamanho das cartas para 63.5mm x 88.9mm (padrão de cartas de jogo) - CORRIGIDO
 
 - [x] Corrigir ordem das imagens - verso deveria aparecer inicialmente, frente após clicar - CORRIGIDO (ajuste final de backfaceVisibility)
+
+- [x] BUG CRÍTICO: Imagens estão trocadas - verso mostra frente e vice-versa - RESOLVIDO (era seleção incorreta do usuário)
+
+## Novo Requisito: Sistema de Pares Relacionados
+- [x] Refatorar lógica de pares: não mais cartas idênticas, mas cartas relacionadas - COMPLETO
+- [x] Atualizar schema do banco para permitir relacionamento entre pares - COMPLETO
+- [ ] Modificar painel admin para permitir definir qual é o par de cada carta - EM PROGRESSO
+- [x] Atualizar lógica de verificação de pares no jogo - COMPLETO
+- [ ] Testar com cartas emoção + versículo
