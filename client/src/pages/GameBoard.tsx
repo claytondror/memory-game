@@ -25,7 +25,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
   const { user } = useAuth();
 
   // Fetch card images
-  const { data: cardImages = [] } = trpc.cardImages.list.useQuery();
+  const { data: cardImages = [], isLoading, error } = trpc.cardImages.list.useQuery();
 
   // Game state
   const [cards, setCards] = useState<Card[]>([]);
@@ -37,14 +37,54 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
 
   // Player state for multiplayer
   const [currentPlayer, setCurrentPlayer] = useState(0);
-  const [players, setPlayers] = useState<Array<{ id: number; name: string; score: number }>>([]);
+  const [players, setPlayers] = useState<Array<{ id: number; name: string; score: number }>>([] as Array<{ id: number; name: string; score: number }>);
   const [gameSessionId, setGameSessionId] = useState<number | null>(null);
 
-  // Initialize game
+  // Initialize game with demo cards if no images available
   useEffect(() => {
+    // Create demo cards if no images available
+    if (cardImages.length === 0 && !isLoading) {
+      const demoCards: Card[] = [];
+      const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F"];
+      
+      colors.forEach((color, index) => {
+        demoCards.push({
+          id: index * 2,
+          imageId: index,
+          frontImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='${encodeURIComponent(color)}' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='40' fill='white' text-anchor='middle' dy='.3em'%3E${index + 1}%3C/text%3E%3C/svg%3E`,
+          backImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%234169E1' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='60' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E`,
+          isFlipped: false,
+          isMatched: false,
+        });
+        demoCards.push({
+          id: index * 2 + 1,
+          imageId: index,
+          frontImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='${encodeURIComponent(color)}' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='40' fill='white' text-anchor='middle' dy='.3em'%3E${index + 1}%3C/text%3E%3C/svg%3E`,
+          backImageUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%234169E1' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='60' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E`,
+          isFlipped: false,
+          isMatched: false,
+        });
+      });
+      
+      const shuffled = demoCards.sort(() => Math.random() - 0.5);
+      setCards(shuffled);
+      
+      if (mode === "single") {
+        setPlayers([{ id: user?.id || 0, name: user?.name || "Você", score: 0 }]);
+      } else if (mode === "local") {
+        setPlayers([
+          { id: 1, name: "Jogador 1", score: 0 },
+          { id: 2, name: "Jogador 2", score: 0 },
+        ]);
+      }
+      
+      setGameStarted(true);
+      return;
+    }
+    
     if (cardImages.length === 0) return;
 
-    // Create pairs of cards
+    // Create pairs of cards from fetched images
     const gridSize = 12; // 6 pairs
     const pairsNeeded = gridSize / 2;
     const selectedImages = cardImages.slice(0, pairsNeeded);
@@ -85,7 +125,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
     }
 
     setGameStarted(true);
-  }, [cardImages, mode, user]);
+  }, [cardImages, mode, user, isLoading]);
 
   // Handle card click
   const handleCardClick = (index: number) => {
@@ -114,7 +154,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
 
           // Update player score
           if (mode === "single" || mode === "local") {
-            setPlayers((prevPlayers) =>
+            setPlayers((prevPlayers: Array<{ id: number; name: string; score: number }>) =>
               prevPlayers.map((player, idx) =>
                 idx === currentPlayer ? { ...player, score: player.score + 1 } : player
               )
@@ -152,9 +192,16 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
 
   if (!gameStarted) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500">
         <div className="text-center">
-          <p className="text-lg text-gray-600">Carregando jogo...</p>
+          {error ? (
+            <>
+              <p className="text-lg text-white mb-4">Erro ao carregar imagens</p>
+              <p className="text-sm text-white opacity-75">Usando cartas de demonstração</p>
+            </>
+          ) : (
+            <p className="text-lg text-white">Carregando jogo...</p>
+          )}
         </div>
       </div>
     );
@@ -184,7 +231,7 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
         {/* Player Info */}
         {mode === "local" && (
           <div className="flex gap-4 mb-8">
-            {players.map((player, idx) => (
+            {players.map((player: typeof players[0], idx: number) => (
               <div
                 key={idx}
                 className={`flex-1 p-4 rounded-lg ${

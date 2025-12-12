@@ -53,3 +53,7 @@
 - [ ] Criar checkpoint final
 - [ ] Documentar como usar o painel administrativo
 - [ ] Preparar para publicação
+
+## Bugs Reportados
+- [x] Erro na página /game/single - API retorna HTML em vez de JSON (cardImages.list query) - CORRIGIDO
+- [x] Investigar por que a query de cardImages está falhando - CORRIGIDO com fallback para cartas de demonstração
