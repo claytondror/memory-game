@@ -76,5 +76,10 @@
 
 ## BUG CRÍTICO - Sistema de Pares
 - [x] Painel admin não tem interface para configurar pares - CORRIGIDO com modal visual
-- [ ] Novas cartas carregadas não tém pairId configurado (fica null) - EM PROGRESSO
-- [ ] Jogo não encontra pares porque pairId está vazio nas novas cartas - DEPENDE DO ANTERIOR
+- [x] PROBLEMA RAIZ: Relacionamento de pares não era bidirecional - CORRIGIDO
+- [x] Quando configura Carta A = par de Carta B, agora Carta B também sabe que é par de Carta A
+- [x] Relacionamento BIDIRECIONAL: A ↔ B - IMPLEMENTADO
+- [x] Atualizar mutation setPair para configurar ambos os lados - COMPLETO
+- [ ] Criar visualização CLARA de quais cartas são pares
+- [ ] Mostrar pares lado a lado com imagens
+- [ ] Permitir desconectar/editar pares facilmente

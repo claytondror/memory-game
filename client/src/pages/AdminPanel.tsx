@@ -346,6 +346,51 @@ export default function AdminPanel() {
           </div>
         </div>
 
+          {/* Pair Configuration Section */}
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurar Pares (Emoção ↔ Versículo)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {cardImages.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">Nenhuma carta adicionada ainda.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {cardImages.map((card) => (
+                      <div key={card.id} className="border rounded-lg p-4 bg-gray-50">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 flex-1">
+                            <img src={card.frontImageUrl} alt={card.name} className="w-16 h-20 object-cover rounded border" />
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{card.name}</p>
+                              <p className="text-xs text-gray-500">ID: {card.id}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {card.pairId ? (
+                              <>
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-500 mb-1">Par:</p>
+                                  {cardImages.find(c => c.id === card.pairId) && (
+                                    <img src={cardImages.find(c => c.id === card.pairId)?.frontImageUrl} alt="pair" className="w-12 h-16 object-cover rounded border" />
+                                  )}
+                                </div>
+                                <Button size="sm" variant="destructive" onClick={() => setPairMutation.mutate({ id: card.id, pairId: null })}>Desconectar</Button>
+                              </>
+                            ) : (
+                              <Button size="sm" onClick={() => { setSelectedCardForPair(card.id); setPairingMode(true); }}>Configurar Par</Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
         {/* Pairing Modal */}
         {pairingMode && selectedCardForPair && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

@@ -103,7 +103,14 @@ export const appRouter = router({
           throw new TRPCError({ code: "FORBIDDEN" });
         }
 
+        // Update both sides of the relationship (bidirectional)
         await db.updateCardImagePair(input.id, input.pairId);
+        
+        // If setting a pair, also update the other card to point back
+        if (input.pairId !== null) {
+          await db.updateCardImagePair(input.pairId, input.id);
+        }
+        
         return { success: true };
       }),
   }),

@@ -133,7 +133,7 @@ export async function updateCardImagePair(id: number, pairId: number | null) {
   return db.update(cardImages).set({ pairId }).where(eq(cardImages.id, id));
 }
 
-export async function getCardImageWithPair(id: number) {
+export async function getCardImageById(id: number) {
   const db = await getDb();
   if (!db) return null;
   
