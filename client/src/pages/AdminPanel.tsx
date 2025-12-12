@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Trash2, Eye, EyeOff, Upload, Home } from "lucide-react";
+import { Loader2, Trash2, Eye, EyeOff, Upload, Home, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminPanel() {
@@ -15,6 +15,10 @@ export default function AdminPanel() {
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Refs for file inputs
+  const frontInputRef = useRef<HTMLInputElement>(null);
+  const backInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch all card images
   const { data: cardImages = [], refetch } = trpc.cardImages.listAll.useQuery();
@@ -67,6 +71,14 @@ export default function AdminPanel() {
       </div>
     );
   }
+
+  const handleFrontImageClick = () => {
+    frontInputRef.current?.click();
+  };
+
+  const handleBackImageClick = () => {
+    backInputRef.current?.click();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "front" | "back") => {
     const file = e.target.files?.[0];
@@ -154,35 +166,32 @@ export default function AdminPanel() {
                   <label className="text-sm font-medium text-gray-700 block mb-2">
                     Imagem da Frente
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <button
+                    onClick={handleFrontImageClick}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 hover:bg-blue-50 transition-all"
+                  >
                     {frontImage ? (
                       <div>
-                        <p className="text-sm text-gray-600">{frontImage.name}</p>
                         <img
                           src={URL.createObjectURL(frontImage)}
                           alt="preview"
-                          className="w-20 h-20 object-cover mx-auto mt-2 rounded"
+                          className="w-24 h-24 object-cover mx-auto rounded mb-2"
                         />
+                        <p className="text-sm text-gray-600 font-medium">{frontImage.name}</p>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">Clique para selecionar</p>
+                      <div>
+                        <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">Clique para selecionar imagem</p>
+                      </div>
                     )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, "front")}
-                      className="hidden"
-                      id="front-input"
-                    />
-                    <label htmlFor="front-input" className="cursor-pointer">
-                      <Input type="file" accept="image/*" className="hidden" />
-                    </label>
-                  </div>
+                  </button>
                   <input
+                    ref={frontInputRef}
                     type="file"
                     accept="image/*"
                     onChange={(e) => handleFileChange(e, "front")}
-                    className="w-full mt-2"
+                    className="hidden"
                   />
                 </div>
 
@@ -190,15 +199,33 @@ export default function AdminPanel() {
                   <label className="text-sm font-medium text-gray-700 block mb-2">
                     Imagem do Verso
                   </label>
+                  <button
+                    onClick={handleBackImageClick}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 hover:bg-blue-50 transition-all"
+                  >
+                    {backImage ? (
+                      <div>
+                        <img
+                          src={URL.createObjectURL(backImage)}
+                          alt="preview"
+                          className="w-24 h-24 object-cover mx-auto rounded mb-2"
+                        />
+                        <p className="text-sm text-gray-600 font-medium">{backImage.name}</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">Clique para selecionar imagem</p>
+                      </div>
+                    )}
+                  </button>
                   <input
+                    ref={backInputRef}
                     type="file"
                     accept="image/*"
                     onChange={(e) => handleFileChange(e, "back")}
-                    className="w-full"
+                    className="hidden"
                   />
-                  {backImage && (
-                    <p className="text-sm text-gray-600 mt-2">{backImage.name}</p>
-                  )}
                 </div>
 
                 <Button

@@ -57,3 +57,5 @@
 ## Bugs Reportados
 - [x] Erro na página /game/single - API retorna HTML em vez de JSON (cardImages.list query) - CORRIGIDO
 - [x] Investigar por que a query de cardImages está falhando - CORRIGIDO com fallback para cartas de demonstração
+
+- [x] Corrigir inputs de arquivo no painel administrativo - botões não funcionam - CORRIGIDO
