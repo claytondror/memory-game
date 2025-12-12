@@ -253,33 +253,38 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
             <motion.div
               key={index}
               onClick={() => handleCardClick(index)}
-              className="cursor-pointer h-24 perspective"
+              className="cursor-pointer perspective"
+              style={{ aspectRatio: "63.5 / 88.9" }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <motion.div
                 className="relative w-full h-full"
-                animate={{ rotateY: flippedCards.includes(index) || card.isMatched ? 180 : 0 }}
+                animate={{ rotateY: flippedCards.includes(index) || card.isMatched ? 0 : 180 }}
                 transition={{ duration: 0.6 }}
                 style={{ transformStyle: "preserve-3d" }}
               >
-                {/* Back of card */}
+                {/* Front of card (shown when not flipped) */}
                 <div
-                  className="absolute w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center cursor-pointer shadow-lg"
+                  className="absolute w-full h-full bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden"
                   style={{ backfaceVisibility: "hidden" }}
-                >
-                  <div className="text-4xl">?</div>
-                </div>
-
-                {/* Front of card */}
-                <div
-                  className="absolute w-full h-full bg-white rounded-lg flex items-center justify-center shadow-lg"
-                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
                   <img
                     src={card.frontImageUrl}
-                    alt="card"
-                    className="w-full h-full object-cover rounded-lg"
+                    alt="card-front"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Back of card (shown when flipped) */}
+                <div
+                  className="absolute w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center cursor-pointer shadow-lg"
+                  style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                >
+                  <img
+                    src={card.backImageUrl}
+                    alt="card-back"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               </motion.div>

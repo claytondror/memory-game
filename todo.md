@@ -59,3 +59,6 @@
 - [x] Investigar por que a query de cardImages está falhando - CORRIGIDO com fallback para cartas de demonstração
 
 - [x] Corrigir inputs de arquivo no painel administrativo - botões não funcionam - CORRIGIDO
+
+- [x] Corrigir lógica de flip das cartas - está invertida (mostrando verso em vez de frente) - CORRIGIDO
+- [x] Aumentar tamanho das cartas para 63.5mm x 88.9mm (padrão de cartas de jogo) - CORRIGIDO
