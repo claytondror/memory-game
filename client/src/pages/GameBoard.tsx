@@ -88,32 +88,19 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
     if (cardImages.length === 0) return;
 
     // Create pairs of cards from fetched images
-    const gridSize = 12; // 6 pairs
-    const pairsNeeded = gridSize / 2;
-    const selectedImages = cardImages.slice(0, pairsNeeded);
+    // Use all available card images
+    const selectedImages = cardImages;
 
-    const newCards: Card[] = [];
-    selectedImages.forEach((image, index) => {
-      // Add pair
-      newCards.push({
-        id: index * 2,
-        imageId: image.id,
-        pairId: image.pairId,
-        frontImageUrl: image.frontImageUrl,
-        backImageUrl: image.backImageUrl,
-        isFlipped: false,
-        isMatched: false,
-      });
-      newCards.push({
-        id: index * 2 + 1,
-        imageId: image.id,
-        pairId: image.pairId,
-        frontImageUrl: image.frontImageUrl,
-        backImageUrl: image.backImageUrl,
-        isFlipped: false,
-        isMatched: false,
-      });
-    });
+    // Cards are already paired by pairId, just add them once
+    const newCards: Card[] = selectedImages.map((image, index) => ({
+      id: image.id,
+      imageId: image.id,
+      pairId: image.pairId,
+      frontImageUrl: image.frontImageUrl,
+      backImageUrl: image.backImageUrl,
+      isFlipped: false,
+      isMatched: false,
+    }));
 
     // Shuffle cards
     const shuffled = newCards.sort(() => Math.random() - 0.5);
@@ -147,7 +134,8 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
       const [first, second] = newFlipped;
       const firstCard = cards[first];
       const secondCard = cards[second];
-      const isMatch = (firstCard.pairId === secondCard.id) || (firstCard.id === secondCard.pairId);
+      // Check if they are pairs by comparing pairIds
+      const isMatch = firstCard.pairId === secondCard.id || secondCard.pairId === firstCard.id;
 
       setTimeout(() => {
         if (isMatch) {

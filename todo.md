@@ -83,3 +83,10 @@
 - [ ] Criar visualização CLARA de quais cartas são pares
 - [ ] Mostrar pares lado a lado com imagens
 - [ ] Permitir desconectar/editar pares facilmente
+
+
+## BUG CRÍTICO - Jogo Não Funciona com Cartas Reais
+- [x] Jogo mostra 8 cartas de demonstração em vez das 4 cartas reais (2 pares) que foram adicionadas - CORRIGIDO
+- [x] Cartas reais não estão sendo carregadas - CORRIGIDO (gridSize estava fixo em 12)
+- [x] Pares não são reconhecidos como encontrados - cartas viram de volta mesmo quando acerta - CORRIGIDO
+- [x] Lógica de comparação de pairId no GameBoard estava falhando - CORRIGIDO
