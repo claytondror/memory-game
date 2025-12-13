@@ -90,3 +90,17 @@
 - [x] Cartas reais não estão sendo carregadas - CORRIGIDO (gridSize estava fixo em 12)
 - [x] Pares não são reconhecidos como encontrados - cartas viram de volta mesmo quando acerta - CORRIGIDO
 - [x] Lógica de comparação de pairId no GameBoard estava falhando - CORRIGIDO
+
+
+## BUG CRÍTICO - Modo Multiplayer Online Não Funciona
+- [ ] WebSocket não está implementado para sincronização em tempo real
+- [ ] Dois jogadores na mesma sala não veem os movimentos um do outro
+- [ ] Precisa implementar sistema de eventos em tempo real (Socket.IO ou similar)
+- [ ] Sincronizar estado do jogo entre jogadores
+- [ ] Implementar turno alternado entre jogadores online
+
+
+## Tarefas Finais
+- [x] Completar implementação de WebSocket - emitir eventos quando cartas são clicadas - COMPLETO
+- [x] Mudar título do jogo para "A Era das Emoções com Cecília" - COMPLETO
+- [ ] Testar modo multiplayer online com WebSocket - PRONTO PARA TESTAR
