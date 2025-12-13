@@ -111,3 +111,10 @@
 - [x] Evento player-joined não estava sendo escutado no frontend - CORRIGIDO
 - [x] Página fica presa em "Aguardando outro jogador..." - CORRIGIDO
 - [x] Adicionado listener para player-joined e inicialização do jogo quando 2 jogadores estão presentes
+
+
+## BUG CRÍTICO - WebSocket Não Sincroniza Corretamente
+- [x] Criador da sala não recebe notificação quando segundo jogador entra - CORRIGIDO
+- [x] Segundo jogador consegue jogar sozinho, criador fica preso em "Aguardando..." - CORRIGIDO
+- [x] Evento player-joined não estava sendo escutado no tempo certo - CORRIGIDO
+- [x] Problema de timing: listener registrado depois da conexão - CORRIGIDO com useRef

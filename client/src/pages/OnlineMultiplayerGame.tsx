@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useGameSocket } from "@/hooks/useGameSocket";
@@ -17,26 +17,31 @@ export default function OnlineMultiplayerGame() {
   const [copiedRoomId, setCopiedRoomId] = useState(false);
   const [loading, setLoading] = useState(false);
   const [playerCount, setPlayerCount] = useState(0);
+  const gameSocketRef = useRef<ReturnType<typeof useGameSocket> | null>(null);
   
-  // Initialize WebSocket when in create mode
-  const gameSocket = useGameSocket(roomId, user?.name || "Jogador", gameMode === "create");
+  // Initialize WebSocket - always enabled to listen for events
+  const gameSocket = useGameSocket(roomId, user?.name || "Jogador", !!roomId);
+  gameSocketRef.current = gameSocket;
   
-  // Listen for player-joined events
+  // Set up listener as soon as roomId is set
   useEffect(() => {
-    if (gameMode !== "create") return;
+    if (!roomId || !gameSocketRef.current) return;
     
-    gameSocket.on("player-joined", ({ players }: { players: Array<{ id: string; name: string; score: number }> }) => {
+    const handlePlayerJoined = ({ players }: { players: Array<{ id: string; name: string; score: number }> }) => {
+      console.log("Players in room:", players.length);
       setPlayerCount(players.length);
       // Start game when 2 players are in the room
       if (players.length >= 2) {
         setGameMode("playing");
       }
-    });
+    };
+    
+    gameSocketRef.current.on("player-joined", handlePlayerJoined);
     
     return () => {
-      gameSocket.off("player-joined");
+      gameSocketRef.current?.off("player-joined");
     };
-  }, [gameMode, gameSocket]);
+  }, [roomId]);
 
   // Generate room ID
   const generateRoomIdHandler = () => {
@@ -45,10 +50,6 @@ export default function OnlineMultiplayerGame() {
       const newRoomId = nanoid(8);
       setRoomId(newRoomId);
       setGameMode("create");
-      // Join the room immediately as the creator
-      setTimeout(() => {
-        gameSocket.joinRoom(newRoomId);
-      }, 100);
     } catch (error) {
       console.error("Error generating room ID:", error);
     } finally {
@@ -64,8 +65,6 @@ export default function OnlineMultiplayerGame() {
 
   const handleJoinGame = () => {
     if (!roomId.trim()) return;
-    // Connect to the room as a joining player
-    gameSocket.joinRoom(roomId);
     setGameMode("playing");
   };
 
