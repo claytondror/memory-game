@@ -104,3 +104,10 @@
 - [x] Completar implementação de WebSocket - emitir eventos quando cartas são clicadas - COMPLETO
 - [x] Mudar título do jogo para "Jogo da Memória das Emoções, com Versículos!" - COMPLETO
 - [ ] Testar modo multiplayer online com WebSocket - PRONTO PARA TESTAR
+
+
+## BUG CRÍTICO - Modo Multiplayer Online
+- [x] Segundo jogador entra na sala mas primeiro jogador não é notificado - CORRIGIDO
+- [x] Evento player-joined não estava sendo escutado no frontend - CORRIGIDO
+- [x] Página fica presa em "Aguardando outro jogador..." - CORRIGIDO
+- [x] Adicionado listener para player-joined e inicialização do jogo quando 2 jogadores estão presentes

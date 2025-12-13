@@ -84,6 +84,12 @@ export function useGameSocket(roomId: string, playerName: string, enabled: boole
       socketRef.current.off(event);
     }
   };
+  
+  const joinRoom = (newRoomId: string) => {
+    if (socketRef.current?.connected) {
+      socketRef.current.emit("join-room", { roomId: newRoomId, playerName });
+    }
+  };
 
   return {
     isConnected,
@@ -94,5 +100,6 @@ export function useGameSocket(roomId: string, playerName: string, enabled: boole
     endGame,
     on,
     off,
+    joinRoom,
   };
 }

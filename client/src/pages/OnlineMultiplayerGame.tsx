@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useGameSocket } from "@/hooks/useGameSocket";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,27 @@ export default function OnlineMultiplayerGame() {
   const [roomId, setRoomId] = useState("");
   const [copiedRoomId, setCopiedRoomId] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [playerCount, setPlayerCount] = useState(0);
+  
+  // Initialize WebSocket when in create mode
+  const gameSocket = useGameSocket(roomId, user?.name || "Jogador", gameMode === "create");
+  
+  // Listen for player-joined events
+  useEffect(() => {
+    if (gameMode !== "create") return;
+    
+    gameSocket.on("player-joined", ({ players }: { players: Array<{ id: string; name: string; score: number }> }) => {
+      setPlayerCount(players.length);
+      // Start game when 2 players are in the room
+      if (players.length >= 2) {
+        setGameMode("playing");
+      }
+    });
+    
+    return () => {
+      gameSocket.off("player-joined");
+    };
+  }, [gameMode, gameSocket]);
 
   // Generate room ID
   const generateRoomIdHandler = () => {
@@ -23,6 +45,10 @@ export default function OnlineMultiplayerGame() {
       const newRoomId = nanoid(8);
       setRoomId(newRoomId);
       setGameMode("create");
+      // Join the room immediately as the creator
+      setTimeout(() => {
+        gameSocket.joinRoom(newRoomId);
+      }, 100);
     } catch (error) {
       console.error("Error generating room ID:", error);
     } finally {
@@ -38,6 +64,8 @@ export default function OnlineMultiplayerGame() {
 
   const handleJoinGame = () => {
     if (!roomId.trim()) return;
+    // Connect to the room as a joining player
+    gameSocket.joinRoom(roomId);
     setGameMode("playing");
   };
 
@@ -152,7 +180,7 @@ export default function OnlineMultiplayerGame() {
             </div>
 
             <div className="text-center">
-              <p className="text-gray-600 text-sm mb-4">Aguardando outro jogador...</p>
+              <p className="text-gray-600 text-sm mb-4">Aguardando outro jogador... ({playerCount}/2)</p>
               <div className="flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
               </div>
