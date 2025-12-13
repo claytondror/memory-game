@@ -12,7 +12,7 @@ export default function GameMode() {
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-2">A Era das Emoções com Cecília</h1>
+          <h1 className="text-5xl font-bold text-white mb-2">Jogo da Memória das Emoções, com Versículos!</h1>
           <p className="text-white text-lg opacity-90">Escolha como você quer jogar</p>
         </div>
 

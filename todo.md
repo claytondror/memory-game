@@ -102,5 +102,5 @@
 
 ## Tarefas Finais
 - [x] Completar implementação de WebSocket - emitir eventos quando cartas são clicadas - COMPLETO
-- [x] Mudar título do jogo para "A Era das Emoções com Cecília" - COMPLETO
+- [x] Mudar título do jogo para "Jogo da Memória das Emoções, com Versículos!" - COMPLETO
 - [ ] Testar modo multiplayer online com WebSocket - PRONTO PARA TESTAR
