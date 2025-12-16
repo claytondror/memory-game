@@ -146,4 +146,5 @@
 - [x] Debugar joinRoom para encontrar o motivo - ENCONTRADO
 - [x] Adicionar BroadcastChannel para sincronizar localStorage entre abas - IMPLEMENTADO
 - [x] Adicionar logging detalhado ao joinRoom - IMPLEMENTADO
+- [x] Mudar gerador de roomId para código curto (ex: "ABCD1234") - IMPLEMENTADO
 - [x] Todos os 11 testes passando

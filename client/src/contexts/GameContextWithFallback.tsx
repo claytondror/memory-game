@@ -172,7 +172,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const createRoom = async (creatorName?: string): Promise<string> => {
     console.log("[createRoom] Starting...");
-    const newRoomId = `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newRoomId = Math.random().toString(36).substr(2, 8).toUpperCase();
     const initialPlayers = creatorName
       ? [
           {
