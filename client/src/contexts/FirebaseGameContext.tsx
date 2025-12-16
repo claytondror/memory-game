@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, onValue, remove, update } from "firebase/database";
+import { createContext, useState, useEffect, useRef, useContext } from "react";
+import { ref, set, get, onValue, remove, update } from "firebase/database";
+import { getFirebaseDatabase } from "@/lib/firebase";
 
 interface Player {
   id: string;
@@ -51,19 +51,9 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
 
   // Inicializar Firebase
   useEffect(() => {
-    const firebaseConfig = {
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-      appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    };
-
     try {
-      const app = initializeApp(firebaseConfig);
-      dbRef.current = getDatabase(app);
-      console.log("[Firebase] Initialized successfully");
+      dbRef.current = getFirebaseDatabase();
+      console.log("[Firebase] Database initialized");
     } catch (error) {
       console.error("[Firebase] Initialization error:", error);
     }
@@ -76,7 +66,28 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
+  const subscribeToRoom = (roomIdToSubscribe: string) => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+
+    const roomRef = ref(dbRef.current, `rooms/${roomIdToSubscribe}`);
+    const unsubscribe = onValue(roomRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const room = snapshot.val() as GameRoom;
+        setPlayers(room.players);
+        setGameState(room.gameState);
+        setStatus(room.status);
+      }
+    });
+
+    unsubscribesRef.current.push(unsubscribe);
+  };
+
   const createRoom = async (): Promise<string> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
     if (!dbRef.current) throw new Error("Firebase not initialized");
 
     const newRoomId = `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -107,6 +118,9 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
   };
 
   const joinRoom = async (roomIdToJoin: string, playerName: string): Promise<boolean> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
     if (!dbRef.current) throw new Error("Firebase not initialized");
 
     try {
@@ -138,42 +152,21 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
       });
 
       console.log(`[Firebase] Player ${playerName} joined room ${roomIdToJoin}`);
-      currentPlayerRef.current = newPlayer;
       setRoomId(roomIdToJoin);
+      currentPlayerRef.current = newPlayer;
       subscribeToRoom(roomIdToJoin);
       return true;
     } catch (error) {
       console.error("[Firebase] Error joining room:", error);
-      throw error;
+      return false;
     }
   };
 
-  const subscribeToRoom = (roomIdToSubscribe: string) => {
-    if (!dbRef.current) return;
-
-    const roomRef = ref(dbRef.current, `rooms/${roomIdToSubscribe}`);
-
-    const unsubscribe = onValue(
-      roomRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const room = snapshot.val() as GameRoom;
-          console.log(`[Firebase] Room updated:`, room);
-          setPlayers(room.players);
-          setGameState(room.gameState);
-          setStatus(room.status);
-        }
-      },
-      (error) => {
-        console.error("[Firebase] Error subscribing to room:", error);
-      }
-    );
-
-    unsubscribesRef.current.push(unsubscribe);
-  };
-
-  const leaveRoom = async () => {
-    if (!roomId || !dbRef.current) return;
+  const leaveRoom = async (): Promise<void> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+    if (!dbRef.current || !roomId) throw new Error("Firebase not initialized or no room");
 
     try {
       const roomRef = ref(dbRef.current, `rooms/${roomId}`);
@@ -188,17 +181,15 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
         if (updatedPlayers.length === 0) {
           // Delete room if empty
           await remove(roomRef);
-          console.log(`[Firebase] Room ${roomId} deleted (empty)`);
         } else {
-          // Update room with remaining players
           await update(roomRef, { players: updatedPlayers });
-          console.log(`[Firebase] Player left room ${roomId}`);
         }
       }
 
-      // Cleanup
+      // Unsubscribe from room updates
       unsubscribesRef.current.forEach((unsub) => unsub());
       unsubscribesRef.current = [];
+
       setRoomId(null);
       setPlayers([]);
       setGameState(null);
@@ -206,91 +197,99 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
       currentPlayerRef.current = null;
     } catch (error) {
       console.error("[Firebase] Error leaving room:", error);
+      throw error;
     }
   };
 
-  const updateGameState = async (newGameState: GameRoom["gameState"]) => {
-    if (!roomId || !dbRef.current) return;
+  const updateGameState = async (gameState: GameRoom["gameState"]): Promise<void> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+    if (!dbRef.current || !roomId) throw new Error("Firebase not initialized or no room");
 
     try {
-      await update(ref(dbRef.current, `rooms/${roomId}`), {
-        gameState: newGameState,
-      });
-      console.log(`[Firebase] Game state updated in room ${roomId}`);
+      await update(ref(dbRef.current, `rooms/${roomId}`), { gameState });
     } catch (error) {
       console.error("[Firebase] Error updating game state:", error);
+      throw error;
     }
   };
 
-  const flipCard = async (cardIndex: number) => {
-    if (!roomId || !gameState || !dbRef.current) return;
+  const flipCard = async (cardIndex: number): Promise<void> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+    if (!dbRef.current || !roomId || !gameState) throw new Error("Firebase not initialized");
 
     try {
-      const newGameState = { ...gameState };
-      newGameState.flipped[cardIndex] = true;
-
-      await update(ref(dbRef.current, `rooms/${roomId}`), {
-        gameState: newGameState,
-      });
-      console.log(`[Firebase] Card ${cardIndex} flipped in room ${roomId}`);
+      const newFlipped = [...gameState.flipped];
+      newFlipped[cardIndex] = true;
+      await updateGameState({ ...gameState, flipped: newFlipped });
     } catch (error) {
       console.error("[Firebase] Error flipping card:", error);
+      throw error;
     }
   };
 
-  const matchFound = async (matchedIndices: number[]) => {
-    if (!roomId || !gameState || !dbRef.current) return;
+  const matchFound = async (matchedIndices: number[]): Promise<void> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+    if (!dbRef.current || !roomId || !gameState) throw new Error("Firebase not initialized");
 
     try {
-      const newGameState = { ...gameState };
-      matchedIndices.forEach((index) => {
-        newGameState.matched[index] = true;
+      const newMatched = [...gameState.matched];
+      matchedIndices.forEach((idx) => {
+        newMatched[idx] = true;
       });
-      newGameState.moves += 1;
 
-      // Update player score
-      const updatedPlayers = players.map((p) =>
-        p.id === currentPlayerRef.current?.id
-          ? { ...p, score: p.score + 1 }
-          : p
-      );
+      const updatedPlayers = [...players];
+      if (updatedPlayers[gameState.currentPlayer]) {
+        updatedPlayers[gameState.currentPlayer].score += 1;
+      }
 
       await update(ref(dbRef.current, `rooms/${roomId}`), {
-        gameState: newGameState,
+        gameState: { ...gameState, matched: newMatched },
         players: updatedPlayers,
       });
-      console.log(`[Firebase] Match found in room ${roomId}`);
     } catch (error) {
       console.error("[Firebase] Error recording match:", error);
+      throw error;
     }
   };
 
-  const nextTurn = async (nextPlayerIndex: number) => {
-    if (!roomId || !gameState || !dbRef.current) return;
+  const nextTurn = async (nextPlayerIndex: number): Promise<void> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+    if (!dbRef.current || !roomId || !gameState) throw new Error("Firebase not initialized");
 
     try {
-      const newGameState = { ...gameState };
-      newGameState.currentPlayer = nextPlayerIndex;
-
-      await update(ref(dbRef.current, `rooms/${roomId}`), {
-        gameState: newGameState,
+      const newFlipped = gameState.flipped.map(() => false);
+      await updateGameState({
+        ...gameState,
+        flipped: newFlipped,
+        currentPlayer: nextPlayerIndex,
       });
-      console.log(`[Firebase] Next turn in room ${roomId}: player ${nextPlayerIndex}`);
     } catch (error) {
-      console.error("[Firebase] Error updating turn:", error);
+      console.error("[Firebase] Error switching turn:", error);
+      throw error;
     }
   };
 
-  const endGame = async (winner: string) => {
-    if (!roomId || !dbRef.current) return;
+  const endGame = async (winner: string): Promise<void> => {
+    if (!dbRef.current) {
+      dbRef.current = getFirebaseDatabase();
+    }
+    if (!dbRef.current || !roomId) throw new Error("Firebase not initialized");
 
     try {
       await update(ref(dbRef.current, `rooms/${roomId}`), {
         status: "finished",
       });
-      console.log(`[Firebase] Game ended in room ${roomId}: winner ${winner}`);
     } catch (error) {
       console.error("[Firebase] Error ending game:", error);
+      throw error;
     }
   };
 
@@ -316,9 +315,9 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
   );
 }
 
-export function useFirebaseGame() {
+export function useFirebaseGame(): FirebaseGameContextType {
   const context = useContext(FirebaseGameContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useFirebaseGame must be used within FirebaseGameProvider");
   }
   return context;

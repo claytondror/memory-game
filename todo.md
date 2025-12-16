@@ -104,6 +104,9 @@
 - [x] Adicionar GameBoard.tsx com suporte a Firebase
 - [x] Criar testes vitest para validar sincronização
 - [x] Todos os testes passando (11 testes)
+- [x] Criar arquivo firebase.ts com configuração hardcoded
+- [x] Corrigir inicialização do Firebase no Context
+- [x] Adicionar fallback para getFirebaseDatabase em todos os métodos
 - [ ] Testar multiplayer online com dois navegadores
 - [ ] Validar sincronização de estado do jogo
 - [ ] Validar sincronização de placar entre jogadores
