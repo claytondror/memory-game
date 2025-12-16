@@ -238,6 +238,82 @@ export const appRouter = router({
       return { roomId: nanoid(8) };
     }),
   }),
+
+  // Game Rooms management (for multiplayer online)
+  gameRooms: router({
+    create: protectedProcedure
+      .input(
+        z.object({
+          roomCode: z.string().length(8),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        // Check if room code already exists
+        const existingRoom = await db.getGameRoomByCode(input.roomCode);
+        if (existingRoom) {
+          throw new TRPCError({ code: "CONFLICT", message: "Room code already exists" });
+        }
+
+        // Create room with 15 minute expiration
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+        await db.createGameRoom({
+          roomCode: input.roomCode,
+          creatorId: ctx.user.id,
+          status: "waiting",
+          maxPlayers: 2,
+          currentPlayers: 1,
+          expiresAt,
+        });
+
+        return { success: true, roomCode: input.roomCode };
+      }),
+
+    getByCode: publicProcedure
+      .input(z.object({ roomCode: z.string() }))
+      .query(async ({ input }) => {
+        const room = await db.getGameRoomByCode(input.roomCode);
+        if (!room) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+        }
+        return room;
+      }),
+
+    join: protectedProcedure
+      .input(z.object({ roomCode: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const room = await db.getGameRoomByCode(input.roomCode);
+        if (!room) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+        }
+
+        if (room.status !== "waiting") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Room is not available" });
+        }
+
+        if (room.currentPlayers >= room.maxPlayers) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Room is full" });
+        }
+
+        // Update player count
+        await db.updateGameRoomPlayers(input.roomCode, room.currentPlayers + 1);
+
+        return { success: true, room };
+      }),
+
+    updateStatus: protectedProcedure
+      .input(
+        z.object({
+          roomCode: z.string(),
+          status: z.enum(["waiting", "playing", "completed", "abandoned"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await db.updateGameRoomStatus(input.roomCode, input.status);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

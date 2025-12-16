@@ -148,3 +148,14 @@
 - [x] Adicionar logging detalhado ao joinRoom - IMPLEMENTADO
 - [x] Mudar gerador de roomId para código curto (ex: "ABCD1234") - IMPLEMENTADO
 - [x] Todos os 11 testes passando
+
+## BUG CRÍTICO - Multiplayer Entre Dispositivos Diferentes NÃO Funciona
+- [x] localStorage + BroadcastChannel só funcionam no MESMO dispositivo/navegador - DIAGNOSTICADO
+- [x] Sala criada no iPhone (Safari) não é encontrada no computador (Edge) - CAUSA IDENTIFICADA
+- [x] Erro: "[joinRoom] Room not found: DIJ92KFP" - CAUSA RAIZ ENCONTRADA
+- [x] Solução: Implementar armazenamento de salas no banco de dados (tRPC) - IMPLEMENTADO
+- [x] Criar tRPC procedure para criar sala no servidor - COMPLETO
+- [x] Criar tRPC procedure para buscar sala pelo código no servidor - COMPLETO
+- [x] Criar tRPC procedure para entrar em sala no servidor - COMPLETO
+- [x] Refatorar GameContextWithFallback para usar tRPC - COMPLETO
+- [ ] Testar com dois dispositivos diferentes - PRÓXIMO PASSO

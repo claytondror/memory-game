@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, cardImages, gameSessions, gameParticipants, gameMoves, InsertCardImage, InsertGameSession, InsertGameParticipant, InsertGameMove } from "../drizzle/schema";
+import { InsertUser, users, cardImages, gameSessions, gameParticipants, gameMoves, gameRooms, InsertCardImage, InsertGameSession, InsertGameParticipant, InsertGameMove, InsertGameRoom } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -208,4 +208,35 @@ export async function getGameMoves(gameSessionId: number) {
   if (!db) return [];
   
   return db.select().from(gameMoves).where(eq(gameMoves.gameSessionId, gameSessionId));
+}
+
+// Game Rooms queries
+export async function createGameRoom(data: InsertGameRoom) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(gameRooms).values(data);
+  return result;
+}
+
+export async function getGameRoomByCode(roomCode: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(gameRooms).where(eq(gameRooms.roomCode, roomCode)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateGameRoomPlayers(roomCode: string, currentPlayers: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.update(gameRooms).set({ currentPlayers }).where(eq(gameRooms.roomCode, roomCode));
+}
+
+export async function updateGameRoomStatus(roomCode: string, status: "waiting" | "playing" | "completed" | "abandoned") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.update(gameRooms).set({ status }).where(eq(gameRooms.roomCode, roomCode));
 }

@@ -1,6 +1,7 @@
-import { createContext, useState, useEffect, useRef, useContext } from "react";
-import { ref, set, get, onValue, remove, update } from "firebase/database";
-import { getFirebaseDatabase } from "@/lib/firebase";
+"use client";
+
+import React, { createContext, useState, useEffect, useRef, ReactNode } from "react";
+import { trpc } from "@/lib/trpc";
 
 interface Player {
   id: string;
@@ -80,29 +81,20 @@ const localStorageRooms = {
   },
 };
 
-export function GameProvider({ children }: { children: React.ReactNode }) {
+export function GameProvider({ children }: { children: ReactNode }) {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameState, setGameState] = useState<GameRoom["gameState"] | null>(null);
   const [status, setStatus] = useState<"waiting" | "playing" | "finished" | null>(null);
   const [isOnline, setIsOnline] = useState(true);
 
-  const dbRef = useRef<any>(null);
-  const unsubscribesRef = useRef<Array<() => void>>([]);
-  const currentPlayerRef = useRef<Player | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const broadcastListenerRef = useRef<((event: MessageEvent) => void) | null>(null);
 
-  // Initialize Firebase
-  useEffect(() => {
-    try {
-      dbRef.current = getFirebaseDatabase();
-      console.log("[Game] Database initialized");
-    } catch (error) {
-      console.error("[Game] Initialization error:", error);
-      setIsOnline(false);
-    }
-  }, []);
+  // tRPC mutations
+  const createRoomMutation = trpc.gameRooms.create.useMutation();
+  const joinRoomMutation = trpc.gameRooms.join.useMutation();
+  const updateStatusMutation = trpc.gameRooms.updateStatus.useMutation();
 
   // Listen to BroadcastChannel messages
   useEffect(() => {
@@ -131,48 +123,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   // Cleanup
   useEffect(() => {
     return () => {
-      unsubscribesRef.current.forEach((unsub) => unsub());
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
   }, []);
 
-  const subscribeToRoom = (roomIdToSubscribe: string) => {
-    if (!dbRef.current) {
-      // Use localStorage polling as fallback
-      console.log("[Game] Using localStorage polling");
-      pollIntervalRef.current = setInterval(() => {
-        const room = localStorageRooms.get(roomIdToSubscribe);
-        if (room) {
-          setPlayers(room.players);
-          setGameState(room.gameState);
-          setStatus(room.status);
-        }
-      }, 500);
-      return;
-    }
-
-    try {
-      const roomRef = ref(dbRef.current, `rooms/${roomIdToSubscribe}`);
-      const unsubscribe = onValue(roomRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const room = snapshot.val() as GameRoom;
-          setPlayers(room.players);
-          setGameState(room.gameState);
-          setStatus(room.status);
-          // Also save to localStorage as backup
-          localStorageRooms.set(roomIdToSubscribe, room);
-        }
-      });
-      unsubscribesRef.current.push(unsubscribe);
-    } catch (error) {
-      console.error("[Game] Error subscribing to room:", error);
-      setIsOnline(false);
-    }
-  };
-
   const createRoom = async (creatorName?: string): Promise<string> => {
     console.log("[createRoom] Starting...");
-    const newRoomId = Math.random().toString(36).substr(2, 8).toUpperCase();
+    const newRoomCode = Math.random().toString(36).substr(2, 8).toUpperCase();
     const initialPlayers = creatorName
       ? [
           {
@@ -183,7 +140,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         ]
       : [];
     const newRoom: GameRoom = {
-      id: newRoomId,
+      id: newRoomCode,
       players: initialPlayers,
       gameState: {
         cards: [],
@@ -197,299 +154,141 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     };
 
     try {
-      // Try Firebase first
-      if (dbRef.current) {
-        console.log("[createRoom] Writing to Firebase...");
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Firebase write timeout")), 5000)
-        );
-
-        await Promise.race([
-          set(ref(dbRef.current, `rooms/${newRoomId}`), newRoom),
-          timeoutPromise,
-        ]);
-        console.log("[createRoom] Room created on Firebase:", newRoomId);
-        setIsOnline(true);
-      } else {
-        throw new Error("Firebase not available");
-      }
+      // Try to create room on server via tRPC
+      console.log("[createRoom] Creating room on server:", newRoomCode);
+      await createRoomMutation.mutateAsync({ roomCode: newRoomCode });
+      console.log("[createRoom] Room created on server:", newRoomCode);
+      setIsOnline(true);
     } catch (error) {
-      console.warn("[createRoom] Firebase failed, using localStorage:", error);
-      localStorageRooms.set(newRoomId, newRoom);
+      console.warn("[createRoom] Server failed, using localStorage:", error);
+      localStorageRooms.set(newRoomCode, newRoom);
       setIsOnline(false);
     }
 
-    setRoomId(newRoomId);
+    setRoomId(newRoomCode);
     setPlayers(initialPlayers);
-    subscribeToRoom(newRoomId);
-    return newRoomId;
+    // Save to localStorage as backup
+    localStorageRooms.set(newRoomCode, newRoom);
+    return newRoomCode;
   };
 
-  const joinRoom = async (roomIdToJoin: string, playerName: string): Promise<boolean> => {
-    console.log("[joinRoom] Starting with roomId:", roomIdToJoin);
+  const joinRoom = async (roomCodeToJoin: string, playerName: string): Promise<boolean> => {
+    console.log("[joinRoom] Starting with roomCode:", roomCodeToJoin);
     try {
-      let room: GameRoom | null = null;
-
-      // Try Firebase first
-      if (dbRef.current) {
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firebase read timeout")), 5000)
-          );
-
-          const snapshot = (await Promise.race([
-            get(ref(dbRef.current, `rooms/${roomIdToJoin}`)),
-            timeoutPromise,
-          ])) as any;
-
-          if (snapshot.exists()) {
-            room = snapshot.val() as GameRoom;
-            console.log("[joinRoom] Found room on Firebase");
-          }
-        } catch (error) {
-          console.warn("[joinRoom] Firebase failed, trying localStorage:", error);
-          room = localStorageRooms.get(roomIdToJoin);
-          setIsOnline(false);
-        }
-      } else {
-        console.log("[joinRoom] Firebase not available, using localStorage");
-        room = localStorageRooms.get(roomIdToJoin);
-      }
-
-      if (!room) {
-        console.error("[joinRoom] Room not found:", roomIdToJoin);
-        return false;
-      }
-
-      console.log("[joinRoom] Room found with players:", room.players.length);
-
-      if (!room.players || room.players.length >= 2) {
-        console.error("[joinRoom] Room is full or has no players array");
-        return false;
-      }
-
-      const newPlayer: Player = {
-        id: `${playerName}-${Date.now()}`,
-        name: playerName,
-        score: 0,
-      };
-
-      const updatedPlayers = [...room.players, newPlayer];
-      const updatedRoom = {
-        ...room,
-        players: updatedPlayers,
-        status: updatedPlayers.length === 2 ? "playing" : "waiting",
-      } as GameRoom;
-
-      // Update Firebase
-      if (dbRef.current) {
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firebase write timeout")), 5000)
-          );
-
-          await Promise.race([
-            update(ref(dbRef.current, `rooms/${roomIdToJoin}`), {
-              players: updatedPlayers,
-              status: updatedRoom.status,
-            }),
-            timeoutPromise,
-          ]);
-          console.log("[joinRoom] Updated on Firebase");
-        } catch (error) {
-          console.warn("[joinRoom] Firebase update failed, using localStorage:", error);
-          setIsOnline(false);
-        }
-      }
-
-      // Always update localStorage
-      localStorageRooms.set(roomIdToJoin, updatedRoom);
-
-      setRoomId(roomIdToJoin);
-      setPlayers(updatedPlayers);
-      currentPlayerRef.current = newPlayer;
-      subscribeToRoom(roomIdToJoin);
+      // Try to join room on server via tRPC
+      console.log("[joinRoom] Attempting to join room on server:", roomCodeToJoin);
+      const result = await joinRoomMutation.mutateAsync({ roomCode: roomCodeToJoin });
+      console.log("[joinRoom] Successfully joined room on server");
+      
+      setRoomId(roomCodeToJoin);
+      setIsOnline(true);
       return true;
     } catch (error) {
-      console.error("[joinRoom] Error:", error);
-      return false;
+      console.warn("[joinRoom] Server join failed, trying localStorage:", error);
+      
+      // Fallback to localStorage
+      const room = localStorageRooms.get(roomCodeToJoin);
+      if (room) {
+        console.log("[joinRoom] Found room in localStorage");
+        const newPlayer: Player = {
+          id: `${playerName}-${Date.now()}`,
+          name: playerName,
+          score: 0,
+        };
+        room.players.push(newPlayer);
+        localStorageRooms.set(roomCodeToJoin, room);
+        
+        setRoomId(roomCodeToJoin);
+        setPlayers(room.players);
+        setGameState(room.gameState);
+        setStatus(room.status);
+        setIsOnline(false);
+        return true;
+      } else {
+        console.error("[joinRoom] Room not found: " + roomCodeToJoin);
+        return false;
+      }
     }
   };
 
   const leaveRoom = async (): Promise<void> => {
-    if (!roomId) throw new Error("No room to leave");
-
+    if (!roomId) return;
+    
     try {
-      // Try Firebase
-      if (dbRef.current) {
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firebase timeout")), 5000)
-          );
-
-          const snapshot = (await Promise.race([
-            get(ref(dbRef.current, `rooms/${roomId}`)),
-            timeoutPromise,
-          ])) as any;
-
-          if (snapshot.exists()) {
-            const room = snapshot.val() as GameRoom;
-            const updatedPlayers = room.players.filter(
-              (p) => p.id !== currentPlayerRef.current?.id
-            );
-
-            if (updatedPlayers.length === 0) {
-              await remove(ref(dbRef.current, `rooms/${roomId}`));
-            } else {
-              await update(ref(dbRef.current, `rooms/${roomId}`), {
-                players: updatedPlayers,
-              });
-            }
-          }
-        } catch (error) {
-          console.warn("[leaveRoom] Firebase failed, using localStorage:", error);
-          setIsOnline(false);
-        }
-      }
-
-      // Update localStorage
-      localStorageRooms.delete(roomId);
-
-      unsubscribesRef.current.forEach((unsub) => unsub());
-      unsubscribesRef.current = [];
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-
-      setRoomId(null);
-      setPlayers([]);
-      setGameState(null);
-      setStatus(null);
-      currentPlayerRef.current = null;
+      await updateStatusMutation.mutateAsync({
+        roomCode: roomId,
+        status: "abandoned",
+      });
     } catch (error) {
-      console.error("[leaveRoom] Error:", error);
-      throw error;
+      console.warn("[leaveRoom] Failed to update status on server:", error);
     }
+
+    setRoomId(null);
+    setPlayers([]);
+    setGameState(null);
+    setStatus(null);
+    localStorageRooms.delete(roomId);
   };
 
   const updateGameState = async (newGameState: GameRoom["gameState"]): Promise<void> => {
-    if (!roomId) throw new Error("No room");
+    if (!roomId) return;
 
-    try {
-      if (dbRef.current) {
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firebase timeout")), 5000)
-          );
-
-          await Promise.race([
-            update(ref(dbRef.current, `rooms/${roomId}`), { gameState: newGameState }),
-            timeoutPromise,
-          ]);
-        } catch (error) {
-          console.warn("[updateGameState] Firebase failed, using localStorage:", error);
-          setIsOnline(false);
-        }
-      }
-
-      // Update localStorage
-      const room = localStorageRooms.get(roomId);
-      if (room) {
-        localStorageRooms.set(roomId, { ...room, gameState: newGameState });
-      }
-    } catch (error) {
-      console.error("[updateGameState] Error:", error);
-      throw error;
+    setGameState(newGameState);
+    
+    // Update localStorage
+    const room = localStorageRooms.get(roomId);
+    if (room) {
+      room.gameState = newGameState;
+      localStorageRooms.set(roomId, room);
     }
   };
 
   const flipCard = async (cardIndex: number): Promise<void> => {
-    if (!gameState) throw new Error("No game state");
-    const newFlipped = [...gameState.flipped];
-    newFlipped[cardIndex] = true;
-    await updateGameState({ ...gameState, flipped: newFlipped });
+    if (!gameState) return;
+
+    const newGameState = { ...gameState };
+    newGameState.flipped[cardIndex] = !newGameState.flipped[cardIndex];
+    await updateGameState(newGameState);
   };
 
   const matchFound = async (matchedIndices: number[]): Promise<void> => {
-    if (!gameState) throw new Error("No game state");
-    const newMatched = [...gameState.matched];
-    matchedIndices.forEach((idx) => {
-      newMatched[idx] = true;
+    if (!gameState) return;
+
+    const newGameState = { ...gameState };
+    matchedIndices.forEach((index) => {
+      newGameState.matched[index] = true;
     });
-
-    const updatedPlayers = [...players];
-    if (updatedPlayers[gameState.currentPlayer]) {
-      updatedPlayers[gameState.currentPlayer].score += 1;
-    }
-
-    if (roomId && dbRef.current) {
-      try {
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Firebase timeout")), 5000)
-        );
-
-        await Promise.race([
-          update(ref(dbRef.current, `rooms/${roomId}`), {
-            gameState: { ...gameState, matched: newMatched },
-            players: updatedPlayers,
-          }),
-          timeoutPromise,
-        ]);
-      } catch (error) {
-        console.warn("[matchFound] Firebase failed:", error);
-        setIsOnline(false);
-      }
-    }
-
-    // Update localStorage
-    if (roomId) {
-      const room = localStorageRooms.get(roomId);
-      if (room) {
-        localStorageRooms.set(roomId, {
-          ...room,
-          gameState: { ...gameState, matched: newMatched },
-          players: updatedPlayers,
-        } as GameRoom);
-      }
-    }
+    newGameState.moves++;
+    await updateGameState(newGameState);
   };
 
   const nextTurn = async (nextPlayerIndex: number): Promise<void> => {
-    if (!gameState) throw new Error("No game state");
-    const newFlipped = gameState.flipped.map(() => false);
-    await updateGameState({
-      ...gameState,
-      flipped: newFlipped,
-      currentPlayer: nextPlayerIndex,
-    });
+    if (!gameState) return;
+
+    const newGameState = { ...gameState };
+    newGameState.currentPlayer = nextPlayerIndex;
+    await updateGameState(newGameState);
   };
 
   const endGame = async (winner: string): Promise<void> => {
-    if (!roomId) throw new Error("No room");
+    if (!roomId) return;
 
     try {
-      if (dbRef.current) {
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firebase timeout")), 5000)
-          );
-
-          await Promise.race([
-            update(ref(dbRef.current, `rooms/${roomId}`), { status: "finished" }),
-            timeoutPromise,
-          ]);
-        } catch (error) {
-          console.warn("[endGame] Firebase failed:", error);
-          setIsOnline(false);
-        }
-      }
-
-      // Update localStorage
-      const room = localStorageRooms.get(roomId);
-      if (room) {
-        localStorageRooms.set(roomId, { ...room, status: "finished" });
-      }
+      await updateStatusMutation.mutateAsync({
+        roomCode: roomId,
+        status: "completed",
+      });
     } catch (error) {
-      console.error("[endGame] Error:", error);
-      throw error;
+      console.warn("[endGame] Failed to update status on server:", error);
+    }
+
+    setStatus("finished");
+    
+    // Update localStorage
+    const room = localStorageRooms.get(roomId);
+    if (room) {
+      room.status = "finished";
+      localStorageRooms.set(roomId, room);
     }
   };
 
@@ -513,7 +312,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useGame(): GameContextType {
-  const context = useContext(GameContext);
+  const context = React.useContext(GameContext);
   if (!context) {
     throw new Error("useGame must be used within GameProvider");
   }

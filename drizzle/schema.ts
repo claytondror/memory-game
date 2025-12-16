@@ -110,3 +110,30 @@ export const gameMoves = mysqlTable("game_moves", {
 
 export type GameMove = typeof gameMoves.$inferSelect;
 export type InsertGameMove = typeof gameMoves.$inferInsert;
+
+/**
+ * Game rooms table - tracks online multiplayer game rooms
+ * Each room has a unique code that players use to join
+ */
+export const gameRooms = mysqlTable("game_rooms", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Unique room code (e.g., DIJ92KFP) that players use to join */
+  roomCode: varchar("roomCode", { length: 8 }).notNull().unique(),
+  /** ID of the user who created this room */
+  creatorId: int("creatorId").notNull(),
+  /** Current status of the room */
+  status: mysqlEnum("status", ["waiting", "playing", "completed", "abandoned"]).default("waiting").notNull(),
+  /** Maximum number of players allowed (usually 2) */
+  maxPlayers: int("maxPlayers").default(2).notNull(),
+  /** Current number of players in the room */
+  currentPlayers: int("currentPlayers").default(1).notNull(),
+  /** Game session ID once the game starts */
+  gameSessionId: int("gameSessionId"),
+  /** Room expires after this time if no one joins */
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GameRoom = typeof gameRooms.$inferSelect;
+export type InsertGameRoom = typeof gameRooms.$inferInsert;
