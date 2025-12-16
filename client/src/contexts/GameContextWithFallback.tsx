@@ -40,7 +40,15 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Local storage implementation
+// BroadcastChannel for cross-tab communication
+let broadcastChannel: BroadcastChannel | null = null;
+try {
+  broadcastChannel = new BroadcastChannel("game-rooms");
+} catch (e) {
+  console.warn("[LocalStorage] BroadcastChannel not available");
+}
+
+// Local storage implementation with BroadcastChannel sync
 const localStorageRooms = {
   get: (roomId: string): GameRoom | null => {
     try {
@@ -53,6 +61,9 @@ const localStorageRooms = {
   set: (roomId: string, room: GameRoom) => {
     try {
       localStorage.setItem(`game_room_${roomId}`, JSON.stringify(room));
+      if (broadcastChannel) {
+        broadcastChannel.postMessage({ type: "room-updated", roomId, room });
+      }
     } catch {
       console.error("[LocalStorage] Failed to save room");
     }
@@ -60,6 +71,9 @@ const localStorageRooms = {
   delete: (roomId: string) => {
     try {
       localStorage.removeItem(`game_room_${roomId}`);
+      if (broadcastChannel) {
+        broadcastChannel.postMessage({ type: "room-deleted", roomId });
+      }
     } catch {
       console.error("[LocalStorage] Failed to delete room");
     }
@@ -77,6 +91,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const unsubscribesRef = useRef<Array<() => void>>([]);
   const currentPlayerRef = useRef<Player | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const broadcastListenerRef = useRef<((event: MessageEvent) => void) | null>(null);
 
   // Initialize Firebase
   useEffect(() => {
@@ -88,6 +103,30 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setIsOnline(false);
     }
   }, []);
+
+  // Listen to BroadcastChannel messages
+  useEffect(() => {
+    if (!broadcastChannel) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      console.log("[BroadcastChannel] Received message:", event.data);
+      if (event.data.type === "room-updated" && event.data.roomId === roomId) {
+        const room = event.data.room as GameRoom;
+        setPlayers(room.players);
+        setGameState(room.gameState);
+        setStatus(room.status);
+      }
+    };
+
+    broadcastChannel.addEventListener("message", handleMessage);
+    broadcastListenerRef.current = handleMessage;
+
+    return () => {
+      if (broadcastChannel && broadcastListenerRef.current) {
+        broadcastChannel.removeEventListener("message", broadcastListenerRef.current);
+      }
+    };
+  }, [roomId]);
 
   // Cleanup
   useEffect(() => {
@@ -134,11 +173,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const createRoom = async (creatorName?: string): Promise<string> => {
     console.log("[createRoom] Starting...");
     const newRoomId = `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const initialPlayers = creatorName ? [{
-      id: `${creatorName}-${Date.now()}`,
-      name: creatorName,
-      score: 0,
-    }] : [];
+    const initialPlayers = creatorName
+      ? [
+          {
+            id: `${creatorName}-${Date.now()}`,
+            name: creatorName,
+            score: 0,
+          },
+        ]
+      : [];
     const newRoom: GameRoom = {
       id: newRoomId,
       players: initialPlayers,
@@ -177,12 +220,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
 
     setRoomId(newRoomId);
+    setPlayers(initialPlayers);
     subscribeToRoom(newRoomId);
     return newRoomId;
   };
 
   const joinRoom = async (roomIdToJoin: string, playerName: string): Promise<boolean> => {
-    console.log("[joinRoom] Starting...");
+    console.log("[joinRoom] Starting with roomId:", roomIdToJoin);
     try {
       let room: GameRoom | null = null;
 
@@ -193,13 +237,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
             setTimeout(() => reject(new Error("Firebase read timeout")), 5000)
           );
 
-          const snapshot = await Promise.race([
+          const snapshot = (await Promise.race([
             get(ref(dbRef.current, `rooms/${roomIdToJoin}`)),
             timeoutPromise,
-          ]) as any;
+          ])) as any;
 
           if (snapshot.exists()) {
             room = snapshot.val() as GameRoom;
+            console.log("[joinRoom] Found room on Firebase");
           }
         } catch (error) {
           console.warn("[joinRoom] Firebase failed, trying localStorage:", error);
@@ -207,6 +252,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           setIsOnline(false);
         }
       } else {
+        console.log("[joinRoom] Firebase not available, using localStorage");
         room = localStorageRooms.get(roomIdToJoin);
       }
 
@@ -215,8 +261,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
 
+      console.log("[joinRoom] Room found with players:", room.players.length);
+
       if (!room.players || room.players.length >= 2) {
-        console.error("[joinRoom] Room is full");
+        console.error("[joinRoom] Room is full or has no players array");
         return false;
       }
 
@@ -231,7 +279,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         ...room,
         players: updatedPlayers,
         status: updatedPlayers.length === 2 ? "playing" : "waiting",
-      };
+      } as GameRoom;
 
       // Update Firebase
       if (dbRef.current) {
@@ -255,9 +303,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Always update localStorage
-      localStorageRooms.set(roomIdToJoin, updatedRoom as GameRoom);
+      localStorageRooms.set(roomIdToJoin, updatedRoom);
 
       setRoomId(roomIdToJoin);
+      setPlayers(updatedPlayers);
       currentPlayerRef.current = newPlayer;
       subscribeToRoom(roomIdToJoin);
       return true;
@@ -278,10 +327,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
             setTimeout(() => reject(new Error("Firebase timeout")), 5000)
           );
 
-          const snapshot = await Promise.race([
+          const snapshot = (await Promise.race([
             get(ref(dbRef.current, `rooms/${roomId}`)),
             timeoutPromise,
-          ]) as any;
+          ])) as any;
 
           if (snapshot.exists()) {
             const room = snapshot.val() as GameRoom;

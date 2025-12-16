@@ -132,3 +132,18 @@
 - [x] Remover chamada duplicada de joinRoom
 - [ ] Testar criação de sala com fallback
 - [ ] Adicionar indicador visual de modo offline
+
+
+## BUG - Publicação Travada
+- [ ] Botão "Publicando" fica travado sem completar
+- [ ] Verificar logs do servidor
+- [ ] Identificar motivo do travamento
+- [ ] Corrigir processo de publicação
+
+
+## BUG - Segundo Jogador Não Consegue Entrar na Sala
+- [x] Mensagem "Não foi possível entrar na sala" ao tentar entrar - CORRIGIDO
+- [x] Debugar joinRoom para encontrar o motivo - ENCONTRADO
+- [x] Adicionar BroadcastChannel para sincronizar localStorage entre abas - IMPLEMENTADO
+- [x] Adicionar logging detalhado ao joinRoom - IMPLEMENTADO
+- [x] Todos os 11 testes passando
