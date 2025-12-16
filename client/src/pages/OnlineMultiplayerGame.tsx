@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useFirebaseGame } from "@/contexts/FirebaseGameContext";
+import { useGame } from "@/contexts/GameContextWithFallback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import GameBoard from "./GameBoard";
 
 export default function OnlineMultiplayerGame() {
   const [, setLocation] = useLocation();
-  const firebase = useFirebaseGame();
+  const game = useGame();
   const [roomCode, setRoomCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [gameMode, setGameMode] = useState<"menu" | "create" | "join" | "playing">("menu");
@@ -26,14 +26,14 @@ export default function OnlineMultiplayerGame() {
     setIsLoading(true);
     console.log("[handleCreateRoom] Starting...");
     try {
-      console.log("[handleCreateRoom] Calling firebase.createRoom()...");
-      const newRoomId = await firebase.createRoom();
+      console.log("[handleCreateRoom] Calling game.createRoom()...");
+      const newRoomId = await game.createRoom();
       console.log("[handleCreateRoom] Room created:", newRoomId);
       setRoomCode(newRoomId);
       setGameMode("create");
       
       console.log("[handleCreateRoom] Joining room as creator...");
-      await firebase.joinRoom(newRoomId, playerName);
+      await game.joinRoom(newRoomId, playerName);
       console.log("[handleCreateRoom] Joined successfully");
       toast.success("Sala criada com sucesso!");
     } catch (error) {
@@ -58,7 +58,7 @@ export default function OnlineMultiplayerGame() {
 
     setIsLoading(true);
     try {
-      const success = await firebase.joinRoom(roomCode, playerName);
+      const success = await game.joinRoom(roomCode, playerName);
       if (success) {
         toast.success("Entrou na sala com sucesso!");
         setGameMode("playing");
@@ -81,18 +81,18 @@ export default function OnlineMultiplayerGame() {
   };
 
   const handleLeaveRoom = async () => {
-    await firebase.leaveRoom();
+    await game.leaveRoom();
     setGameMode("menu");
     setRoomCode("");
     setPlayerName("");
     toast.success("Saiu da sala");
   };
 
-  if (gameMode === "playing" && firebase.roomId && firebase.players.length >= 1) {
+  if (gameMode === "playing" && game.roomId && game.players.length >= 1) {
     return (
       <GameBoard
         mode="online"
-        roomId={firebase.roomId}
+        roomId={game.roomId}
       />
     );
   }
@@ -196,7 +196,7 @@ export default function OnlineMultiplayerGame() {
               <div>
                 <p className="text-sm text-gray-600 mb-2">Código da Sala:</p>
                 <div className="bg-gray-100 p-4 rounded-lg text-center">
-                  <p className="text-2xl font-mono font-bold">{firebase.roomId}</p>
+                  <p className="text-2xl font-mono font-bold">{game.roomId}</p>
                 </div>
               </div>
 
@@ -227,11 +227,11 @@ export default function OnlineMultiplayerGame() {
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-2">Aguardando outro jogador...</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {firebase.players.length}/2
+                  {game.players.length}/2
                 </p>
               </div>
 
-              {firebase.players.length === 2 && (
+              {game.players.length === 2 && (
                 <div className="bg-green-50 p-4 rounded-lg">
                   <p className="text-sm text-green-900">
                     ✓ Segundo jogador conectado! Iniciando jogo...

@@ -118,3 +118,14 @@
 - [x] Adicionar melhor tratamento de erros e logging - CORRIGIDO
 - [x] Adicionar timeout de 10s para evitar loop infinito - CORRIGIDO
 - [x] Testar criação de sala novamente - TESTES PASSANDO
+
+
+## BUG - Firebase Write Timeout
+- [x] Firebase Realtime Database retorna timeout ao tentar escrever - DIAGNOSTICADO
+- [x] Implementar fallback com localStorage para sincronização local - IMPLEMENTADO
+- [x] Criar GameContextWithFallback com suporte a localStorage
+- [x] Atualizar App.tsx para usar novo GameProvider
+- [x] Atualizar OnlineMultiplayerGame para usar useGame
+- [x] Todos os 11 testes passando
+- [ ] Testar criação de sala com fallback
+- [ ] Adicionar indicador visual de modo offline

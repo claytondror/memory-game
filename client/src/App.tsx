@@ -9,7 +9,7 @@ import SinglePlayerGame from "./pages/SinglePlayerGame";
 import LocalMultiplayerGame from "./pages/LocalMultiplayerGame";
 import OnlineMultiplayerGame from "./pages/OnlineMultiplayerGame";
 import AdminPanel from "./pages/AdminPanel";
-import { FirebaseGameProvider } from "./contexts/FirebaseGameContext";
+import { GameProvider } from "@/contexts/GameContextWithFallback";
 
 function Router() {
   return (
@@ -30,12 +30,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
-        <FirebaseGameProvider>
+        <GameProvider>
           <TooltipProvider>
             <Toaster />
             <Router />
           </TooltipProvider>
-        </FirebaseGameProvider>
+        </GameProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
