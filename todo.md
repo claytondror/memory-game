@@ -110,3 +110,11 @@
 - [ ] Testar multiplayer online com dois navegadores
 - [ ] Validar sincronização de estado do jogo
 - [ ] Validar sincronização de placar entre jogadores
+
+
+## BUG - Botão "Criar Sala" Travado
+- [x] Botão "Criar Sala" fica em loop infinito de processamento - CORRIGIDO
+- [x] Função createRoom() não retorna ou falha silenciosamente - CORRIGIDO
+- [x] Adicionar melhor tratamento de erros e logging - CORRIGIDO
+- [x] Adicionar timeout de 10s para evitar loop infinito - CORRIGIDO
+- [x] Testar criação de sala novamente - TESTES PASSANDO

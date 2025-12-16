@@ -24,17 +24,22 @@ export default function OnlineMultiplayerGame() {
     }
 
     setIsLoading(true);
+    console.log("[handleCreateRoom] Starting...");
     try {
+      console.log("[handleCreateRoom] Calling firebase.createRoom()...");
       const newRoomId = await firebase.createRoom();
+      console.log("[handleCreateRoom] Room created:", newRoomId);
       setRoomCode(newRoomId);
       setGameMode("create");
       
-      // Join the room as the creator
+      console.log("[handleCreateRoom] Joining room as creator...");
       await firebase.joinRoom(newRoomId, playerName);
+      console.log("[handleCreateRoom] Joined successfully");
       toast.success("Sala criada com sucesso!");
     } catch (error) {
-      toast.error("Erro ao criar sala");
-      console.error(error);
+      console.error("[handleCreateRoom] Error:", error);
+      const msg = error instanceof Error ? error.message : "Desconhecido";
+      toast.error(`Erro ao criar sala: ${msg}`);
     } finally {
       setIsLoading(false);
     }

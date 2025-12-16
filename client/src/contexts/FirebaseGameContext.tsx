@@ -85,10 +85,16 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
   };
 
   const createRoom = async (): Promise<string> => {
+    console.log("[createRoom] Starting...");
     if (!dbRef.current) {
+      console.log("[createRoom] dbRef is null, initializing...");
       dbRef.current = getFirebaseDatabase();
     }
-    if (!dbRef.current) throw new Error("Firebase not initialized");
+    if (!dbRef.current) {
+      const error = "Firebase not initialized";
+      console.error("[createRoom] Error:", error);
+      throw new Error(error);
+    }
 
     const newRoomId = `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newRoom: GameRoom = {
@@ -106,13 +112,24 @@ export function FirebaseGameProvider({ children }: { children: React.ReactNode }
     };
 
     try {
-      await set(ref(dbRef.current, `rooms/${newRoomId}`), newRoom);
-      console.log(`[Firebase] Room created: ${newRoomId}`);
+      console.log("[createRoom] Writing to Firebase...");
+      
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Firebase write timeout")), 10000)
+      );
+      
+      await Promise.race([
+        set(ref(dbRef.current, `rooms/${newRoomId}`), newRoom),
+        timeoutPromise
+      ]);
+      
+      console.log(`[createRoom] Room created successfully: ${newRoomId}`);
       setRoomId(newRoomId);
       subscribeToRoom(newRoomId);
       return newRoomId;
     } catch (error) {
-      console.error("[Firebase] Error creating room:", error);
+      console.error("[createRoom] Error:", error);
       throw error;
     }
   };
