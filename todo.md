@@ -127,5 +127,8 @@
 - [x] Atualizar App.tsx para usar novo GameProvider
 - [x] Atualizar OnlineMultiplayerGame para usar useGame
 - [x] Todos os 11 testes passando
+- [x] Corrigir erro de undefined room no joinRoom
+- [x] Adicionar criador automaticamente ao criar sala
+- [x] Remover chamada duplicada de joinRoom
 - [ ] Testar criação de sala com fallback
 - [ ] Adicionar indicador visual de modo offline

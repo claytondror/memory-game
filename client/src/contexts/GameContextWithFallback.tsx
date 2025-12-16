@@ -28,7 +28,7 @@ interface GameContextType {
   gameState: GameRoom["gameState"] | null;
   status: "waiting" | "playing" | "finished" | null;
   isOnline: boolean;
-  createRoom: () => Promise<string>;
+  createRoom: (creatorName?: string) => Promise<string>;
   joinRoom: (roomId: string, playerName: string) => Promise<boolean>;
   leaveRoom: () => Promise<void>;
   updateGameState: (gameState: GameRoom["gameState"]) => Promise<void>;
@@ -131,12 +131,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createRoom = async (): Promise<string> => {
+  const createRoom = async (creatorName?: string): Promise<string> => {
     console.log("[createRoom] Starting...");
     const newRoomId = `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const initialPlayers = creatorName ? [{
+      id: `${creatorName}-${Date.now()}`,
+      name: creatorName,
+      score: 0,
+    }] : [];
     const newRoom: GameRoom = {
       id: newRoomId,
-      players: [],
+      players: initialPlayers,
       gameState: {
         cards: [],
         flipped: [],
@@ -206,11 +211,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (!room) {
-        console.error("[joinRoom] Room not found");
+        console.error("[joinRoom] Room not found:", roomIdToJoin);
         return false;
       }
 
-      if (room.players.length >= 2) {
+      if (!room.players || room.players.length >= 2) {
         console.error("[joinRoom] Room is full");
         return false;
       }

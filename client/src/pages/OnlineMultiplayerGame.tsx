@@ -27,15 +27,15 @@ export default function OnlineMultiplayerGame() {
     console.log("[handleCreateRoom] Starting...");
     try {
       console.log("[handleCreateRoom] Calling game.createRoom()...");
-      const newRoomId = await game.createRoom();
+      const newRoomId = await game.createRoom(playerName);
       console.log("[handleCreateRoom] Room created:", newRoomId);
       setRoomCode(newRoomId);
       setGameMode("create");
-      
-      console.log("[handleCreateRoom] Joining room as creator...");
-      await game.joinRoom(newRoomId, playerName);
-      console.log("[handleCreateRoom] Joined successfully");
       toast.success("Sala criada com sucesso!");
+      console.log("[handleCreateRoom] Waiting for other player...");
+      
+      // Store creator name in sessionStorage so we can use it later
+      sessionStorage.setItem(`room_creator_${newRoomId}`, playerName);
     } catch (error) {
       console.error("[handleCreateRoom] Error:", error);
       const msg = error instanceof Error ? error.message : "Desconhecido";
