@@ -92,29 +92,18 @@
 - [x] Lógica de comparação de pairId no GameBoard estava falhando - CORRIGIDO
 
 
-## BUG CRÍTICO - Modo Multiplayer Online Não Funciona
-- [ ] WebSocket não está implementado para sincronização em tempo real
-- [ ] Dois jogadores na mesma sala não veem os movimentos um do outro
-- [ ] Precisa implementar sistema de eventos em tempo real (Socket.IO ou similar)
-- [ ] Sincronizar estado do jogo entre jogadores
-- [ ] Implementar turno alternado entre jogadores online
-
-
-## Tarefas Finais
-- [x] Completar implementação de WebSocket - emitir eventos quando cartas são clicadas - COMPLETO
-- [x] Mudar título do jogo para "Jogo da Memória das Emoções, com Versículos!" - COMPLETO
-- [ ] Testar modo multiplayer online com WebSocket - PRONTO PARA TESTAR
-
-
-## BUG CRÍTICO - Modo Multiplayer Online
-- [x] Segundo jogador entra na sala mas primeiro jogador não é notificado - CORRIGIDO
-- [x] Evento player-joined não estava sendo escutado no frontend - CORRIGIDO
-- [x] Página fica presa em "Aguardando outro jogador..." - CORRIGIDO
-- [x] Adicionado listener para player-joined e inicialização do jogo quando 2 jogadores estão presentes
-
-
-## BUG CRÍTICO - WebSocket Não Sincroniza Corretamente
-- [x] Criador da sala não recebe notificação quando segundo jogador entra - CORRIGIDO
-- [x] Segundo jogador consegue jogar sozinho, criador fica preso em "Aguardando..." - CORRIGIDO
-- [x] Evento player-joined não estava sendo escutado no tempo certo - CORRIGIDO
-- [x] Problema de timing: listener registrado depois da conexão - CORRIGIDO com useRef
+## Integração Firebase Realtime Database
+- [x] Instalar Firebase SDK
+- [x] Configurar credenciais do Firebase
+- [x] Criar FirebaseGameContext para gerenciar salas
+- [x] Implementar createRoom() para criar salas
+- [x] Implementar joinRoom() para entrar em salas
+- [x] Implementar leaveRoom() para sair de salas
+- [x] Implementar subscribeToRoom() para sincronização em tempo real
+- [x] Refatorar OnlineMultiplayerGame.tsx para usar Firebase
+- [x] Adicionar GameBoard.tsx com suporte a Firebase
+- [x] Criar testes vitest para validar sincronização
+- [x] Todos os testes passando (11 testes)
+- [ ] Testar multiplayer online com dois navegadores
+- [ ] Validar sincronização de estado do jogo
+- [ ] Validar sincronização de placar entre jogadores

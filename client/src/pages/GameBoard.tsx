@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useGameSocket } from "@/hooks/useGameSocket";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { RotateCcw, Home } from "lucide-react";
+import { useFirebaseGame } from "@/contexts/FirebaseGameContext";
 
 interface Card {
   id: number;
@@ -25,6 +25,7 @@ interface GameBoardProps {
 export default function GameBoard({ mode, roomId }: GameBoardProps) {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const firebase = useFirebaseGame();
 
   // Fetch card images
   const { data: cardImages = [], isLoading, error } = trpc.cardImages.list.useQuery();
@@ -41,47 +42,6 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [players, setPlayers] = useState<Array<{ id: number; name: string; score: number }>>([] as Array<{ id: number; name: string; score: number }>);
   const [gameSessionId, setGameSessionId] = useState<number | null>(null);
-  
-  // WebSocket for online mode
-  const gameSocket = useGameSocket(roomId || "", user?.name || "Jogador", mode === "online");
-
-  // Listen to WebSocket events for online mode
-  useEffect(() => {
-    if (mode !== "online") return;
-    
-    gameSocket.on("card-flipped", ({ cardIndex, playerId }) => {
-      if (playerId !== user?.id?.toString()) {
-        // Another player flipped a card, flip it in our view
-        setFlippedCards(prev => {
-          if (!prev.includes(cardIndex)) {
-            return [...prev, cardIndex];
-          }
-          return prev;
-        });
-      }
-    });
-    
-    gameSocket.on("pair-matched", ({ matchedIndices, playerId }) => {
-      // A pair was matched, mark them as matched
-      setMatchedPairs(prev => [...prev, ...matchedIndices]);
-      setFlippedCards([]);
-    });
-    
-    gameSocket.on("turn-changed", ({ currentPlayer: nextPlayer }) => {
-      setCurrentPlayer(nextPlayer);
-    });
-    
-    gameSocket.on("game-ended", ({ winner }) => {
-      setGameCompleted(true);
-    });
-    
-    return () => {
-      gameSocket.off("card-flipped");
-      gameSocket.off("pair-matched");
-      gameSocket.off("turn-changed");
-      gameSocket.off("game-ended");
-    };
-  }, [mode, gameSocket, user?.id]);
 
   // Initialize game with demo cards if no images available
   useEffect(() => {
@@ -170,11 +130,6 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
 
     const newFlipped = [...flippedCards, index];
     setFlippedCards(newFlipped);
-    
-    // Emit card flip event for online mode
-    if (mode === "online" && roomId) {
-      gameSocket.flipCard(index);
-    }
 
     // Check for match when 2 cards are flipped
     if (newFlipped.length === 2) {
@@ -193,11 +148,6 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
               idx === first || idx === second ? { ...card, isMatched: true } : card
             )
           );
-          
-          // Emit match found event for online mode
-          if (mode === "online" && roomId) {
-            gameSocket.matchFound([first, second]);
-          }
 
           // Update player score
           if (mode === "single" || mode === "local") {
