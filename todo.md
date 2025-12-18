@@ -68,6 +68,25 @@
 - [ ] Documentar como usar o painel administrativo
 - [ ] Preparar para publicação
 
+## Leaderboard Global
+- [x] Adicionar tabela de leaderboard ao banco de dados - COMPLETO
+- [x] Criar página de Leaderboard.tsx - COMPLETO
+- [x] Adicionar rota /leaderboard no App.tsx - COMPLETO
+- [x] Mostrar top 5 jogadores - COMPLETO
+- [x] Filtros por wins, winRate, bestTime, score - COMPLETO
+- [x] Mostrar estatísticas de cada jogador - COMPLETO
+- [x] Todos os 11 testes passando - COMPLETO
+
+## Sistema de Achievements
+- [x] Adicionar tabelas achievements e user_achievements ao banco de dados - COMPLETO
+- [x] Criar página Achievements.tsx - COMPLETO
+- [x] Mostrar 8 achievements diferentes - COMPLETO
+- [x] Filtros por earned/locked/all - COMPLETO
+- [x] Mostrar rarity levels (common, uncommon, rare, epic, legendary) - COMPLETO
+- [x] Barra de progresso de desbloqueamento - COMPLETO
+- [x] Adicionar rota /achievements no App.tsx - COMPLETO
+- [x] Todos os 11 testes passando - COMPLETO
+
 ## Bugs Reportados
 - [x] Erro na página /game/single - API retorna HTML em vez de JSON (cardImages.list query) - CORRIGIDO
 - [x] Investigar por que a query de cardImages está falhando - CORRIGIDO com fallback para cartas de demonstração

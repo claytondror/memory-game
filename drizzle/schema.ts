@@ -137,3 +137,78 @@ export const gameRooms = mysqlTable("game_rooms", {
 
 export type GameRoom = typeof gameRooms.$inferSelect;
 export type InsertGameRoom = typeof gameRooms.$inferInsert;
+
+
+/**
+ * Leaderboard table - tracks player statistics for ranking
+ * Updated after each game session
+ */
+export const leaderboard = mysqlTable("leaderboard", {
+  id: int("id").autoincrement().primaryKey(),
+  /** User ID - foreign key to users table */
+  userId: int("userId").notNull().unique(),
+  /** Total number of games played */
+  totalGames: int("totalGames").default(0).notNull(),
+  /** Number of games won */
+  gamesWon: int("gamesWon").default(0).notNull(),
+  /** Win rate percentage (0-100) */
+  winRate: varchar("winRate", { length: 5 }).default("0").notNull(),
+  /** Best time to complete a game (in seconds) */
+  bestTime: int("bestTime"),
+  /** Average time to complete a game (in seconds) */
+  averageTime: int("averageTime"),
+  /** Total number of moves across all games */
+  totalMoves: int("totalMoves").default(0).notNull(),
+  /** Average number of moves per game */
+  averageMoves: varchar("averageMoves", { length: 10 }).default("0").notNull(),
+  /** Total score across all games */
+  totalScore: int("totalScore").default(0).notNull(),
+  /** Highest score in a single game */
+  highestScore: int("highestScore").default(0).notNull(),
+  /** Last game played timestamp */
+  lastGameAt: timestamp("lastGameAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Leaderboard = typeof leaderboard.$inferSelect;
+export type InsertLeaderboard = typeof leaderboard.$inferInsert;
+
+
+/**
+ * Achievements table - tracks badges/achievements earned by players
+ * Each achievement represents a milestone or special accomplishment
+ */
+export const achievements = mysqlTable("achievements", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Achievement code/identifier (e.g., "first_win", "100_games") */
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  /** Display name of the achievement */
+  name: varchar("name", { length: 100 }).notNull(),
+  /** Description of how to earn this achievement */
+  description: text("description").notNull(),
+  /** Icon/emoji for the achievement */
+  icon: varchar("icon", { length: 10 }).default("🏆").notNull(),
+  /** Rarity level: common, uncommon, rare, epic, legendary */
+  rarity: mysqlEnum("rarity", ["common", "uncommon", "rare", "epic", "legendary"]).default("common").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = typeof achievements.$inferInsert;
+
+/**
+ * User achievements junction table - tracks which achievements each user has earned
+ */
+export const userAchievements = mysqlTable("user_achievements", {
+  id: int("id").autoincrement().primaryKey(),
+  /** User ID - foreign key to users table */
+  userId: int("userId").notNull(),
+  /** Achievement ID - foreign key to achievements table */
+  achievementId: int("achievementId").notNull(),
+  /** When the user earned this achievement */
+  earnedAt: timestamp("earnedAt").defaultNow().notNull(),
+});
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = typeof userAchievements.$inferInsert;

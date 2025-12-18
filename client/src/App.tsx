@@ -11,6 +11,8 @@ import OnlineMultiplayerGame from "./pages/OnlineMultiplayerGame";
 import AdminPanel from "./pages/AdminPanel";
 import GameHistory from "./pages/GameHistory";
 import PlayerStats from "./pages/PlayerStats";
+import Leaderboard from "./pages/Leaderboard";
+import Achievements from "./pages/Achievements";
 import { GameProvider } from "@/contexts/GameContextWithFallback";
 import { FirebaseGameProvider } from "@/contexts/FirebaseGameContext";
 
@@ -23,6 +25,8 @@ function Router() {
       <Route path={"/game/online"} component={OnlineMultiplayerGame} />
       <Route path={"/history"} component={GameHistory} />
       <Route path={"/stats"} component={PlayerStats} />
+      <Route path={"/leaderboard"} component={Leaderboard} />
+      <Route path={"/achievements"} component={Achievements} />
       <Route path={"/admin"} component={AdminPanel} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
