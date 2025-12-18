@@ -7,7 +7,6 @@ import { useLocation } from "wouter";
 import { RotateCcw, Home } from "lucide-react";
 import { useFirebaseGame } from "@/contexts/FirebaseGameContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { useState, useEffect } from "react";
 
 interface Card {
   id: number;
