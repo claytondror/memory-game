@@ -45,9 +45,17 @@
 
 ## Fase 8: Testes e Refinamentos
 - [x] Escrever testes unitários para lógica do jogo
-- [ ] Testar modo multiplayer com múltiplas conexões
+-- [ ] Testar multiplayer com múltiplas conexões
 - [ ] Otimizar animações e performance
 - [ ] Testar responsividade em diferentes dispositivos
+
+## Indicador Visual de Modo Offline
+- [x] Adicionar indicador de conexão no topo da página - COMPLETO
+- [x] Mostrar "Conectado ao Servidor" quando online (verde) - COMPLETO
+- [x] Mostrar "Modo Offline" quando offline (amarelo) - COMPLETO
+- [x] Adicionar aviso no menu multiplayer quando offline - COMPLETO
+- [x] Adicionar aviso na sala de espera quando offline - COMPLETO
+- [x] Todos os 11 testes passando - COMPLETOivos
 
 ## Fase 9: Deploy e Documentação
 - [ ] Criar checkpoint final

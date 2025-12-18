@@ -4,7 +4,7 @@ import { useGame } from "@/contexts/GameContextWithFallback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Copy, Check } from "lucide-react";
+import { Loader2, Copy, Check, Wifi, WifiOff, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import GameBoard from "./GameBoard";
 
@@ -98,12 +98,38 @@ export default function OnlineMultiplayerGame() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-500 via-purple-500 to-red-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-pink-500 via-purple-500 to-red-500 flex items-center justify-center p-4 relative">
+      {/* Connection Status Indicator */}
+      <div className="fixed top-4 right-4 z-50">
+        {game.isOnline ? (
+          <div className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg animate-pulse">
+            <Wifi className="w-4 h-4" />
+            <span className="text-sm font-medium">Conectado ao Servidor</span>
+          </div>
+        ) : (
+          <div className="bg-yellow-500 text-yellow-900 px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
+            <WifiOff className="w-4 h-4" />
+            <span className="text-sm font-medium">Modo Offline</span>
+          </div>
+        )}
+      </div>
+
       <div className="w-full max-w-2xl">
         {gameMode === "menu" && (
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-2">Multiplayer Online</h1>
             <p className="text-white/80 mb-8">Jogue com amigos em tempo real</p>
+
+            {/* Offline Warning */}
+            {!game.isOnline && (
+              <div className="bg-yellow-100 border-2 border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg mb-6 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-semibold">Modo Offline Ativo</p>
+                  <p className="text-sm mt-1">Você está jogando localmente. As salas só funcionarão no mesmo dispositivo.</p>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Criar Sala */}
@@ -193,6 +219,17 @@ export default function OnlineMultiplayerGame() {
               <CardTitle>Sala Criada!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Offline Warning in Room */}
+              {!game.isOnline && (
+                <div className="bg-yellow-100 border-2 border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold">Modo Offline</p>
+                    <p className="text-sm mt-1">O outro jogador deve entrar neste dispositivo ou navegador.</p>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <p className="text-sm text-gray-600 mb-2">Código da Sala:</p>
                 <div className="bg-gray-100 p-4 rounded-lg text-center">
