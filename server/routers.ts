@@ -237,6 +237,35 @@ export const appRouter = router({
     generateRoomId: publicProcedure.query(() => {
       return { roomId: nanoid(8) };
     }),
+
+    getHistory: protectedProcedure
+      .input(
+        z.object({
+          mode: z.enum(["single", "local", "online"]).optional(),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const db_instance = await db.getDb();
+        if (!db_instance) return [];
+
+        const { eq, desc, innerJoin } = require("drizzle-orm");
+        const { gameSessions, gameParticipants } = require("../drizzle/schema");
+
+        const sessions = await db_instance
+          .select()
+          .from(gameSessions)
+          .innerJoin(gameParticipants, eq(gameParticipants.gameSessionId, gameSessions.id))
+          .where(eq(gameParticipants.userId, ctx.user.id))
+          .orderBy(desc(gameSessions.createdAt));
+
+        if (input.mode) {
+          return sessions
+            .filter((s: any) => s.game_sessions.mode === input.mode)
+            .map((s: any) => s.game_sessions);
+        }
+
+        return sessions.map((s: any) => s.game_sessions);
+      }),
   }),
 
   // Game Rooms management (for multiplayer online)

@@ -9,6 +9,7 @@ import SinglePlayerGame from "./pages/SinglePlayerGame";
 import LocalMultiplayerGame from "./pages/LocalMultiplayerGame";
 import OnlineMultiplayerGame from "./pages/OnlineMultiplayerGame";
 import AdminPanel from "./pages/AdminPanel";
+import GameHistory from "./pages/GameHistory";
 import { GameProvider } from "@/contexts/GameContextWithFallback";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path={"/game/single"} component={SinglePlayerGame} />
       <Route path={"/game/local"} component={LocalMultiplayerGame} />
       <Route path={"/game/online"} component={OnlineMultiplayerGame} />
+      <Route path={"/history"} component={GameHistory} />
       <Route path={"/admin"} component={AdminPanel} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
