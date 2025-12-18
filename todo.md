@@ -35,7 +35,7 @@
 - [x] Criar WebSocket para sincronização em tempo real - COMPLETO
 - [x] Implementar tela de criação/entrada em sala
 - [x] Sincronizar estado do jogo entre jogadores - COMPLETO
-- [ ] Adicionar chat ou notificações de ações
+- [x] Adicionar chat ou notificações de ações - COMPLETO
 
 ## Fase 7: Persistência e Histórico
 - [x] Salvar histórico de partidas no banco de dados - COMPLETO
