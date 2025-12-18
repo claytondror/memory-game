@@ -192,6 +192,21 @@
 - [x] Exibir distribuição por modo de jogo - COMPLETO
 - [x] Adicionar rota /stats - COMPLETO
 
+## WebSocket Hook para Sincronizacao em Tempo Real
+- [x] Criar hook useWebSocket - COMPLETO
+- [x] Suporte a auto-connect e reconnect - COMPLETO
+- [x] Fila de mensagens - COMPLETO
+- [x] Integrar no GameBoard - COMPLETO
+- [x] Enviar JOIN_ROOM ao conectar - COMPLETO
+
+## Documentacao do Painel Administrativo
+- [x] Criar ADMIN_GUIDE.md - COMPLETO
+- [x] Documentar como adicionar cartas - COMPLETO
+- [x] Explicar sistema de pares - COMPLETO
+- [x] Dicas de qualidade de imagem - COMPLETO
+- [x] Solucao de problemas - COMPLETO
+- [x] Atualizar README com links - COMPLETO
+
 ## Responsividade e Testes
 - [ ] Testar em dispositivos móveis (iPhone, Android)
 - [ ] Testar em tablets
