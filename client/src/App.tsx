@@ -12,6 +12,7 @@ import AdminPanel from "./pages/AdminPanel";
 import GameHistory from "./pages/GameHistory";
 import PlayerStats from "./pages/PlayerStats";
 import { GameProvider } from "@/contexts/GameContextWithFallback";
+import { FirebaseGameProvider } from "@/contexts/FirebaseGameContext";
 
 function Router() {
   return (
@@ -34,12 +35,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
-        <GameProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </GameProvider>
+        <FirebaseGameProvider>
+          <GameProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </GameProvider>
+        </FirebaseGameProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
