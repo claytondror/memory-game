@@ -46,7 +46,7 @@
 ## Fase 8: Testes e Refinamentos
 - [x] Escrever testes unitários para lógica do jogo
 - [ ] Testar multiplayer com múltiplas conexões
-- [ ] Otimizar animações e performance
+- [x] Otimizar animações e performance - COMPLETO
 - [ ] Testar responsividade em diferentes dispositivos
 
 ## Indicador Visual de Modo Offline
