@@ -176,3 +176,26 @@
 - [x] Limpeza automatica de salas vazias - COMPLETO
 - [ ] Integrar cliente WebSocket no GameBoard
 - [ ] Testar sincronizacao em tempo real
+
+## Histórico de Partidas
+- [x] Criar página GameHistory.tsx com filtros - COMPLETO
+- [x] Exibir estatísticas de partidas - COMPLETO
+- [x] Mostrar lista de partidas com detalhes - COMPLETO
+- [x] Adicionar procedure getHistory no servidor - COMPLETO
+- [x] Adicionar rota /history - COMPLETO
+
+## Estatísticas do Jogador
+- [x] Criar página PlayerStats.tsx - COMPLETO
+- [x] Exibir taxa de vitória - COMPLETO
+- [x] Exibir melhor tempo e pontuação - COMPLETO
+- [x] Mostrar estatísticas detalhadas - COMPLETO
+- [x] Exibir distribuição por modo de jogo - COMPLETO
+- [x] Adicionar rota /stats - COMPLETO
+
+## Responsividade e Testes
+- [ ] Testar em dispositivos móveis (iPhone, Android)
+- [ ] Testar em tablets
+- [ ] Testar em diferentes navegadores (Chrome, Safari, Firefox, Edge)
+- [ ] Verificar layout em telas pequenas
+- [ ] Verificar layout em telas grandes
+- [ ] Testar touch events em dispositivos móveis
