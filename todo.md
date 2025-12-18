@@ -80,9 +80,9 @@
 - [x] Quando configura Carta A = par de Carta B, agora Carta B também sabe que é par de Carta A
 - [x] Relacionamento BIDIRECIONAL: A ↔ B - IMPLEMENTADO
 - [x] Atualizar mutation setPair para configurar ambos os lados - COMPLETO
-- [ ] Criar visualização CLARA de quais cartas são pares
-- [ ] Mostrar pares lado a lado com imagens
-- [ ] Permitir desconectar/editar pares facilmente
+- [x] Criar visualização CLARA de quais cartas são pares - COMPLETO
+- [x] Mostrar pares lado a lado com imagens - COMPLETO
+- [x] Permitir desconectar/editar pares facilmente - COMPLETO
 
 
 ## BUG CRÍTICO - Jogo Não Funciona com Cartas Reais

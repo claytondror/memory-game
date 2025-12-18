@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+"use client";
+
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -7,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Trash2, Eye, EyeOff, Upload, Home, Image as ImageIcon, Link2 } from "lucide-react";
 import { toast } from "sonner";
+import { useState, useRef } from "react";
 
 export default function AdminPanel() {
   const [, setLocation] = useLocation();
@@ -142,9 +144,12 @@ export default function AdminPanel() {
     });
   };
 
+  const pairedCards = cardImages.filter(c => c.pairId && c.id < (c.pairId || 0));
+  const unpairedCards = cardImages.filter(c => !c.pairId);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 p-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -332,8 +337,9 @@ export default function AdminPanel() {
                             {card.isActive ? "Ativa" : "Inativa"}
                           </p>
                           {card.pairId && (
-                            <p className="text-xs text-blue-600 mt-1">
-                              Par: ID {card.pairId}
+                            <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                              <Link2 className="w-3 h-3" />
+                              Pareada
                             </p>
                           )}
                         </div>
@@ -346,50 +352,121 @@ export default function AdminPanel() {
           </div>
         </div>
 
-          {/* Pair Configuration Section */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurar Pares (Emoção ↔ Versículo)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {cardImages.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">Nenhuma carta adicionada ainda.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {cardImages.map((card) => (
-                      <div key={card.id} className="border rounded-lg p-4 bg-gray-50">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 flex-1">
-                            <img src={card.frontImageUrl} alt={card.name} className="w-16 h-20 object-cover rounded border" />
-                            <div className="flex-1">
-                              <p className="font-medium text-sm">{card.name}</p>
-                              <p className="text-xs text-gray-500">ID: {card.id}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {card.pairId ? (
-                              <>
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-500 mb-1">Par:</p>
-                                  {cardImages.find(c => c.id === card.pairId) && (
-                                    <img src={cardImages.find(c => c.id === card.pairId)?.frontImageUrl} alt="pair" className="w-12 h-16 object-cover rounded border" />
-                                  )}
+        {/* Pair Visualization Section */}
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Link2 className="w-5 h-5" />
+                Visualização de Pares (Emoção ↔ Versículo)
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-2">Veja quais cartas estão pareadas e gerencie os relacionamentos</p>
+            </CardHeader>
+            <CardContent>
+              {cardImages.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Nenhuma carta adicionada ainda.</p>
+              ) : (
+                <div className="space-y-6">
+                  {/* Paired Cards */}
+                  {pairedCards.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        Pares Configurados ({pairedCards.length})
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {pairedCards.map((card) => {
+                          const pairCard = cardImages.find(c => c.id === card.pairId);
+                          return (
+                            <div key={card.id} className="border-2 border-green-200 rounded-lg p-4 bg-green-50 hover:shadow-md transition-shadow">
+                              <div className="flex items-center justify-between gap-2">
+                                {/* First Card */}
+                                <div className="text-center flex-1">
+                                  <img 
+                                    src={card.frontImageUrl} 
+                                    alt={card.name} 
+                                    className="w-16 h-24 object-cover rounded border-2 border-green-300 mx-auto mb-2" 
+                                  />
+                                  <p className="text-xs font-medium text-gray-700 truncate">{card.name}</p>
                                 </div>
-                                <Button size="sm" variant="destructive" onClick={() => setPairMutation.mutate({ id: card.id, pairId: null })}>Desconectar</Button>
-                              </>
-                            ) : (
-                              <Button size="sm" onClick={() => { setSelectedCardForPair(card.id); setPairingMode(true); }}>Configurar Par</Button>
-                            )}
-                          </div>
-                        </div>
+                                
+                                {/* Arrow */}
+                                <div className="flex flex-col items-center gap-1 px-2">
+                                  <Link2 className="w-5 h-5 text-green-600 rotate-90" />
+                                  <p className="text-xs text-gray-500 font-medium">Par</p>
+                                </div>
+                                
+                                {/* Second Card */}
+                                {pairCard && (
+                                  <div className="text-center flex-1">
+                                    <img 
+                                      src={pairCard.frontImageUrl} 
+                                      alt={pairCard.name} 
+                                      className="w-16 h-24 object-cover rounded border-2 border-green-300 mx-auto mb-2" 
+                                    />
+                                    <p className="text-xs font-medium text-gray-700 truncate">{pairCard.name}</p>
+                                  </div>
+                                )}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full mt-3 text-red-600 hover:bg-red-50 border-red-200"
+                                onClick={() => setPairMutation.mutate({ id: card.id, pairId: null })}
+                              >
+                                Desconectar Par
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                    </div>
+                  )}
+
+                  {/* Unpaired Cards */}
+                  {unpairedCards.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        Cartas Sem Par ({unpairedCards.length})
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {unpairedCards.map((card) => (
+                          <div key={card.id} className="border-2 border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <img 
+                              src={card.frontImageUrl} 
+                              alt={card.name} 
+                              className="w-full h-20 object-cover rounded mb-2" 
+                            />
+                            <p className="text-xs font-medium text-gray-700 truncate mb-2">{card.name}</p>
+                            <Button
+                              size="sm"
+                              className="w-full text-xs"
+                              onClick={() => {
+                                setSelectedCardForPair(card.id);
+                                setPairingMode(true);
+                              }}
+                            >
+                              <Link2 className="w-3 h-3 mr-1" />
+                              Parear
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* All Paired */}
+                  {unpairedCards.length === 0 && pairedCards.length > 0 && (
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
+                      <p className="text-green-700 font-medium">✅ Todas as cartas estão pareadas!</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Pairing Modal */}
         {pairingMode && selectedCardForPair && (
