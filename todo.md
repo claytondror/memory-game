@@ -32,20 +32,20 @@
 
 ## Fase 6: Multiplayer Online
 - [x] Implementar sistema de rooms/salas
-- [ ] Criar WebSocket para sincronização em tempo real
+- [x] Criar WebSocket para sincronização em tempo real - COMPLETO
 - [x] Implementar tela de criação/entrada em sala
 - [ ] Sincronizar estado do jogo entre jogadores
 - [ ] Adicionar chat ou notificações de ações
 
 ## Fase 7: Persistência e Histórico
-- [ ] Salvar histórico de partidas no banco de dados
-- [ ] Implementar estatísticas do jogador
-- [ ] Criar página de histórico de partidas
-- [ ] Adicionar filtros e busca no histórico
+- [x] Salvar histórico de partidas no banco de dados - COMPLETO
+- [x] Implementar estatísticas do jogador - COMPLETO
+- [x] Criar página de histórico de partidas - COMPLETO
+- [x] Adicionar filtros e busca no histórico - COMPLETO
 
 ## Fase 8: Testes e Refinamentos
 - [x] Escrever testes unitários para lógica do jogo
--- [ ] Testar multiplayer com múltiplas conexões
+- [ ] Testar multiplayer com múltiplas conexões
 - [ ] Otimizar animações e performance
 - [ ] Testar responsividade em diferentes dispositivos
 

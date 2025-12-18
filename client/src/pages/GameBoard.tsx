@@ -28,6 +28,22 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
   const { user } = useAuth();
   const firebase = useFirebaseGame();
 
+  // WebSocket para sincronizacao em tempo real
+  const { send } = useWebSocket({
+    autoConnect: mode === "online" && !!roomId,
+    onMessage: (message) => {
+      console.log("[GameBoard] WebSocket message:", message.type);
+      // Processar mensagens recebidas do outro jogador
+      if (message.type === "CARD_FLIPPED") {
+        console.log("[GameBoard] Outro jogador virou a carta:", message.cardIndex);
+      } else if (message.type === "MATCH_FOUND") {
+        console.log("[GameBoard] Match encontrado:", message.cardIndices);
+      } else if (message.type === "GAME_COMPLETED") {
+        console.log("[GameBoard] Jogo completado:", message.playerId);
+      }
+    },
+  });
+
   // Fetch card images
   const { data: cardImages = [], isLoading, error } = trpc.cardImages.list.useQuery();
 
@@ -132,6 +148,17 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
     const newFlipped = [...flippedCards, index];
     setFlippedCards(newFlipped);
 
+    // Sincronizar com WebSocket em modo online
+    if (mode === "online" && roomId) {
+      send({
+        type: "CARD_FLIPPED",
+        roomId,
+        cardIndex: index,
+        playerId: user?.id,
+        timestamp: Date.now(),
+      });
+    }
+
     // Check for match when 2 cards are flipped
     if (newFlipped.length === 2) {
       const [first, second] = newFlipped;
@@ -159,9 +186,31 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
             );
           }
 
+          // Sincronizar match com WebSocket em modo online
+          if (mode === "online" && roomId) {
+            send({
+              type: "MATCH_FOUND",
+              roomId,
+              cardIndices: [first, second],
+              playerId: user?.id,
+              timestamp: Date.now(),
+            });
+          }
+
           // Check if game is completed
           if (matchedPairs.length + 2 === cards.length) {
             setGameCompleted(true);
+            
+            // Sincronizar conclusão do jogo com WebSocket
+            if (mode === "online" && roomId) {
+              send({
+                type: "GAME_COMPLETED",
+                roomId,
+                playerId: user?.id,
+                moves: moves,
+                timestamp: Date.now(),
+              });
+            }
           }
         } else {
           // No match - flip back
