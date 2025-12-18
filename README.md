@@ -21,46 +21,34 @@ Um jogo interativo de memória com suporte para um ou dois jogadores locais e mu
 
 ## 🚀 Como Começar
 
-### Pré-requisitos
-- Node.js 22.13.0 ou superior
-- npm ou pnpm
-- Conta MySQL/TiDB para o banco de dados
+### ⚡ Início Rápido (5 minutos)
 
-### Instalação
-
-1. Clone o repositório:
 ```bash
+# 1. Clone o repositório
 git clone https://github.com/claytondror/memory-game.git
 cd memory-game
-```
 
-2. Instale as dependências:
-```bash
+# 2. Instale as dependências
 pnpm install
-```
 
-3. Configure as variáveis de ambiente:
-```bash
-# Crie um arquivo .env.local com:
-DATABASE_URL=mysql://usuario:senha@host:porta/database
-JWT_SECRET=sua_chave_secreta
-# ... outras variáveis necessárias
-```
-
-4. Configure o banco de dados:
-```bash
+# 3. Configure o banco de dados (veja SETUP.md)
 pnpm db:push
-```
 
-5. Inicie o servidor de desenvolvimento:
-```bash
+# 4. Inicie o servidor
 pnpm dev
+
+# 5. Abra http://localhost:3000
 ```
 
-6. Acesse em seu navegador:
-```
-http://localhost:3000
-```
+### 📖 Instruções Detalhadas
+
+Para um guia completo passo a passo com:
+- Como instalar pré-requisitos
+- Configuração de banco de dados
+- Troubleshooting
+- Testes
+
+**Veja [SETUP.md](./SETUP.md)** para instruções detalhadas!
 
 ## 🎮 Como Jogar
 
