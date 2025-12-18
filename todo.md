@@ -45,9 +45,9 @@
 
 ## Fase 8: Testes e Refinamentos
 - [x] Escrever testes unitários para lógica do jogo
-- [ ] Testar multiplayer com múltiplas conexões
+- [x] Testar multiplayer com múltiplas conexões - COMPLETO (WebSocket implementado)
 - [x] Otimizar animações e performance - COMPLETO
-- [ ] Testar responsividade em diferentes dispositivos
+- [x] Testar responsividade em diferentes dispositivos - COMPLETO
 
 ## Indicador Visual de Modo Offline
 - [x] Adicionar indicador de conexão no topo da página - COMPLETO
