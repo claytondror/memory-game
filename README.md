@@ -228,3 +228,20 @@ Tem dúvidas ou encontrou um bug?
 ---
 
 **Aproveite o jogo! 🎉**
+
+## Documentacao
+
+- **[SETUP.md](./SETUP.md)** - Guia de instalacao e configuracao
+- **[ADMIN_GUIDE.md](./ADMIN_GUIDE.md)** - Guia do painel administrativo
+
+## Recursos Adicionais
+
+### Historico de Partidas
+- Acesse `/history` para ver todas as suas partidas
+- Filtre por modo de jogo (Single, Local, Online)
+- Veja estatisticas de cada partida
+
+### Estatisticas do Jogador
+- Acesse `/stats` para analise detalhada
+- Veja taxa de vitoria, melhor tempo e pontuacao
+- Analise distribuicao de partidas por modo
