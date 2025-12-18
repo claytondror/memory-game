@@ -175,3 +175,54 @@
     }
   }
 }
+
+/* Otimizações de Performance */
+@layer utilities {
+  /* Usar GPU acceleration para animações */
+  .animate-flip {
+    @apply transition-transform duration-300 ease-in-out;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Otimizar animações de cards */
+  .card-flip {
+    @apply transition-all duration-300;
+    perspective: 1000px;
+  }
+
+  /* Reduzir motion para usuários que preferem */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      @apply !transition-none !animate-none;
+    }
+  }
+
+  /* Otimizar rendering de listas */
+  .game-grid {
+    @apply will-change-transform;
+    contain: layout style paint;
+  }
+
+  /* Lazy loading para imagens */
+  img {
+    @apply block;
+  }
+
+  /* Otimizar scrolling */
+  .scrollable {
+    @apply overflow-y-auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Desabilitar outline em elementos interativos para melhor performance */
+  button, a, input {
+    @apply outline-none;
+  }
+
+  /* Otimizar focus states */
+  button:focus-visible, a:focus-visible, input:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
