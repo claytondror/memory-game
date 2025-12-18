@@ -167,3 +167,12 @@
 - [x] Criar tRPC procedure para entrar em sala no servidor - COMPLETO
 - [x] Refatorar GameContextWithFallback para usar tRPC - COMPLETO
 - [ ] Testar com dois dispositivos diferentes - PRÓXIMO PASSO
+
+## WebSocket para Sincronizacao em Tempo Real
+- [x] Criar servidor WebSocket para gerenciar conexoes - COMPLETO
+- [x] Implementar handlers para eventos de jogo (flip, match, reset) - COMPLETO
+- [x] Sincronizar estado do jogo entre jogadores - COMPLETO
+- [x] Broadcast de eventos para todos os jogadores na sala - COMPLETO
+- [x] Limpeza automatica de salas vazias - COMPLETO
+- [ ] Integrar cliente WebSocket no GameBoard
+- [ ] Testar sincronizacao em tempo real
