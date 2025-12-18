@@ -163,15 +163,15 @@
 - [x] Corrigir erro de undefined room no joinRoom
 - [x] Adicionar criador automaticamente ao criar sala
 - [x] Remover chamada duplicada de joinRoom
-- [ ] Testar criação de sala com fallback
-- [ ] Adicionar indicador visual de modo offline
+- [x] Testar criação de sala com fallback - COMPLETO
+- [x] Adicionar indicador visual de modo offline - COMPLETO
 
 
 ## BUG - Publicação Travada
-- [ ] Botão "Publicando" fica travado sem completar
-- [ ] Verificar logs do servidor
-- [ ] Identificar motivo do travamento
-- [ ] Corrigir processo de publicação
+- [x] Botão "Publicando" fica travado sem completar - RESOLVIDO (publicação funcionando normalmente)
+- [x] Verificar logs do servidor - VERIFICADO (sem erros)
+- [x] Identificar motivo do travamento - IDENTIFICADO (era timeout de deploy)
+- [x] Corrigir processo de publicação - CORRIGIDO (publicado com sucesso em manus.space)
 
 
 ## BUG - Segundo Jogador Não Consegue Entrar na Sala
@@ -182,7 +182,7 @@
 - [x] Mudar gerador de roomId para código curto (ex: "ABCD1234") - IMPLEMENTADO
 - [x] Todos os 11 testes passando
 
-## BUG CRÍTICO - Multiplayer Entre Dispositivos Diferentes NÃO Funciona
+## BUG CRÍT## BUG - Multiplayer Entre Dispositivos Diferentes NÃO Funciona
 - [x] localStorage + BroadcastChannel só funcionam no MESMO dispositivo/navegador - DIAGNOSTICADO
 - [x] Sala criada no iPhone (Safari) não é encontrada no computador (Edge) - CAUSA IDENTIFICADA
 - [x] Erro: "[joinRoom] Room not found: DIJ92KFP" - CAUSA RAIZ ENCONTRADA
@@ -191,17 +191,14 @@
 - [x] Criar tRPC procedure para buscar sala pelo código no servidor - COMPLETO
 - [x] Criar tRPC procedure para entrar em sala no servidor - COMPLETO
 - [x] Refatorar GameContextWithFallback para usar tRPC - COMPLETO
-- [ ] Testar com dois dispositivos diferentes - PRÓXIMO PASSO
-
-## WebSocket para Sincronizacao em Tempo Real
+- [x] Testar com dois dispositivos diferentes - COMPLETO (funcionando via servidor)## WebSocket para Sincronizacao em Tempo Real
 - [x] Criar servidor WebSocket para gerenciar conexoes - COMPLETO
 - [x] Implementar handlers para eventos de jogo (flip, match, reset) - COMPLETO
 - [x] Sincronizar estado do jogo entre jogadores - COMPLETO
 - [x] Broadcast de eventos para todos os jogadores na sala - COMPLETO
 - [x] Limpeza automatica de salas vazias - COMPLETO
-- [ ] Integrar cliente WebSocket no GameBoard
-- [ ] Testar sincronizacao em tempo real
-
+- [x] Integrar cliente WebSocket no GameBoard - COMPLETO
+- [x] Testar sincronizacao em tempo real - COMPLETO
 ## Histórico de Partidas
 - [x] Criar página GameHistory.tsx com filtros - COMPLETO
 - [x] Exibir estatísticas de partidas - COMPLETO
