@@ -34,7 +34,7 @@
 - [x] Implementar sistema de rooms/salas
 - [x] Criar WebSocket para sincronização em tempo real - COMPLETO
 - [x] Implementar tela de criação/entrada em sala
-- [ ] Sincronizar estado do jogo entre jogadores
+- [x] Sincronizar estado do jogo entre jogadores - COMPLETO
 - [ ] Adicionar chat ou notificações de ações
 
 ## Fase 7: Persistência e Histórico

@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import { RotateCcw, Home } from "lucide-react";
 import { useFirebaseGame } from "@/contexts/FirebaseGameContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import GameNotifications from "@/components/GameNotifications";
 
 interface Card {
   id: number;
@@ -59,6 +60,14 @@ export default function GameBoard({ mode, roomId }: GameBoardProps) {
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [players, setPlayers] = useState<Array<{ id: number; name: string; score: number }>>([] as Array<{ id: number; name: string; score: number }>);
   const [gameSessionId, setGameSessionId] = useState<number | null>(null);
+  const [notifications, setNotifications] = useState<Array<{ id: string; type: "info" | "success" | "warning" | "error"; message: string }>>([]);
+  const addNotification = (type: "info" | "success" | "warning" | "error", message: string) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setNotifications((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 4000);
+  };
 
   // Initialize game with demo cards if no images available
   useEffect(() => {
